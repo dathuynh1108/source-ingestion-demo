@@ -1,5 +1,8 @@
--- 1. Raw data table
-CREATE TABLE IF NOT EXISTS raw_inventory_transactions (
+-- 0. Database (explicit để chạy ổn trong mọi môi trường)
+CREATE DATABASE IF NOT EXISTS inventory_db;
+
+-- 1. Raw Data Table
+CREATE TABLE IF NOT EXISTS inventory_db.raw_inventory_transactions (
     warehouse_id String,
     sku_id String,
     qty_change Int32,
@@ -8,10 +11,10 @@ CREATE TABLE IF NOT EXISTS raw_inventory_transactions (
 )
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(event_time)
-ORDER BY (warehouse_id, event_time);
+ORDER BY (warehouse_id, sku_id, event_time);
 
--- 2. Kafka engine table (member 3 contract)
-CREATE TABLE IF NOT EXISTS kafka_inventory_consumer (
+-- 2. Kafka Engine (Consumer)
+CREATE TABLE IF NOT EXISTS inventory_db.kafka_inventory_consumer (
     warehouse_id String,
     sku_id String,
     qty_change Int32,
@@ -25,15 +28,15 @@ SETTINGS
     kafka_format = 'JSONEachRow',
     kafka_skip_broken_messages = 1,
     kafka_max_block_size = 1000,
-    kafka_poll_timeout_ms = 1000;
+    kafka_poll_timeout_ms = 1000;        
 
--- 3. Materialized view to ingest from Kafka to raw table
-CREATE MATERIALIZED VIEW IF NOT EXISTS inventory_mv
-TO raw_inventory_transactions AS
+-- 3. Automation: Materialized View to ingest data from Kafka to Raw Table
+CREATE MATERIALIZED VIEW IF NOT EXISTS inventory_db.inventory_mv
+TO inventory_db.raw_inventory_transactions AS
 SELECT
     warehouse_id,
     sku_id,
     qty_change,
     event_time,
     now() AS ingestion_time
-FROM kafka_inventory_consumer;
+FROM inventory_db.kafka_inventory_consumer;
