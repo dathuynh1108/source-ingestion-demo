@@ -65,7 +65,7 @@ services:
       kafka-init:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD-SHELL", "clickhouse-client --user password --password admin --query 'SELECT 1' || exit 1"]
+      test: ["CMD-SHELL", "clickhouse-client --user password --password admin --query 'SELECT 1' 2>/dev/null || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
