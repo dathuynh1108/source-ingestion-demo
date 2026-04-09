@@ -20,6 +20,6 @@ RUN curl -fsSL \
 
 COPY docker/logstash/config/logstash.yml /usr/share/logstash/config/logstash.yml
 COPY docker/logstash/pipeline/logstash.conf /usr/share/logstash/pipeline/logstash.conf
-COPY docker/logstash/sql/inventory_incremental.sql /usr/share/logstash/sql/inventory_incremental.sql
+COPY docker/logstash/sql/ /usr/share/logstash/sql/
 
 USER logstash
