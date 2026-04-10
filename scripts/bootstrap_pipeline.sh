@@ -101,6 +101,14 @@ wait_for "sqlserver_init exited 0" \
   "docker inspect -f '{{.State.Status}} {{.State.ExitCode}}' sqlserver_init 2>/dev/null | grep -q '^exited 0$'" \
   600
 
+wait_for "inventory_chatserver healthy" \
+  "docker inspect -f '{{.State.Health.Status}}' inventory_chatserver 2>/dev/null | grep -q '^healthy$'" \
+  240
+
+wait_for "inventory_chatui healthy" \
+  "docker inspect -f '{{.State.Health.Status}}' inventory_chatui 2>/dev/null | grep -q '^healthy$'" \
+  240
+
 log ""
 log "Refreshing mart dimensions..."
 bash "${ROOT_DIR}/scripts/refresh_mart_dims.sh"
@@ -111,4 +119,5 @@ bash "${ROOT_DIR}/scripts/check_population.sh"
 
 log ""
 log "Done."
-
+log "Chat UI: http://localhost:3000"
+log "Chat server docs: http://localhost:8001/docs"

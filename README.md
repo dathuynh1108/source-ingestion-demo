@@ -1,4 +1,17 @@
-# Source Ingestion Demo - Run Steps (SQL Server → Logstash → Kafka → ClickHouse)
+# Source Ingestion Demo - Run Steps (SQL Server -> Logstash -> Kafka -> ClickHouse)
+
+This repo now includes a warehouse chat app in the same workspace:
+
+- `apps/chatui`: Next.js UI for warehouse Q&A
+- `apps/chatserver`: FastAPI + Socket.IO backend
+- `apps/chatserver/warehouse_chatserver/warehouse_mcp.py`: internal MCP server for ClickHouse access
+
+Warehouse chat app scope:
+
+- casual Q&A over the current warehouse dataset
+- inventory, low stock, overstock, replenishment, and stock movement
+- no document upload flow
+- no citation or customer-support workflow from the previous use case
 
 ## Quick start (recommended)
 
@@ -13,7 +26,14 @@ This will:
 - wait for services to be ready
 - populate ClickHouse **raw** (`inventory_raw.*`)
 - populate ClickHouse **mart dims** (`inventory_mart.dim_*`)
+- start the warehouse chat backend and UI
 - run row-count checks (`scripts/check_population.sh`)
+
+When bootstrap finishes:
+
+- Chat UI: `http://localhost:3000`
+- Chat server docs: `http://localhost:8001/docs`
+- MCP endpoint: `http://localhost:8001/clickhouse/mcp`
 
 ## Manual run
 
@@ -53,20 +73,27 @@ bash scripts/refresh_mart_dims.sh
 bash scripts/check_population.sh
 ```
 
-### 6) Check status and logs
+### 6) Open the warehouse chat app
+
+- UI: `http://localhost:3000`
+- Backend docs: `http://localhost:8001/docs`
+
+If neither Azure OpenAI nor the OpenAI-compatible fallback is configured, the chat server still runs in fallback mode with warehouse-specific canned reasoning on top of ClickHouse queries.
+
+### 7) Check status and logs
 
 ```bash
 docker compose -f docker-compose.yml ps
 docker compose -f docker-compose.yml logs -f
 ```
 
-### 7) Stop
+### 8) Stop
 
 ```bash
 docker compose -f docker-compose.yml down
 ```
 
-### 8) Stop and remove volumes (reset everything)
+### 9) Stop and remove volumes (reset everything)
 
 ```bash
 docker compose -f docker-compose.yml down -v

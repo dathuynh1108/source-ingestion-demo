@@ -1,0 +1,11 @@
+.DS_Store
+.env
+__pycache__/
+*.pyc
+
+apps/chatui/.next/
+apps/chatui/node_modules/
+
+apps/chatserver/.venv/
+apps/chatserver/data/
+apps/chatserver/warehouse_chatserver/__pycache__/
