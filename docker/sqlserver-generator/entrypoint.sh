@@ -30,6 +30,7 @@ echo "[sqlserver-generator] Starting live source generator: ${LIVE_BATCH_ROWS} r
 while true; do
   "${SQLCMD}" -S "${HOST},${PORT}" -U "${USER_NAME}" -P "${PASSWORD}" -No -Q "
   EXEC ${DATABASE}.dbo.sp_insert_live_batch @rows = ${LIVE_BATCH_ROWS};
+  EXEC ${DATABASE}.dbo.sp_insert_live_reporting_batch;
   "
   sleep "${LIVE_BATCH_INTERVAL_SECONDS}"
 done

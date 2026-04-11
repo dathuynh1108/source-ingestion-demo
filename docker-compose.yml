@@ -41,7 +41,16 @@ services:
     command:
       - /bin/sh
       - -c
-      - "/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka_broker:9092 --create --if-not-exists --topic inventory_topic --partitions 1 --replication-factor 1 && echo 'Kafka topic inventory_topic ready'"
+      - "/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka_broker:9092 --create --if-not-exists --topic inventory_topic --partitions 1 --replication-factor 1 && \
+         /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka_broker:9092 --create --if-not-exists --topic po_lines_topic --partitions 1 --replication-factor 1 && \
+         /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka_broker:9092 --create --if-not-exists --topic sales_lines_topic --partitions 1 --replication-factor 1 && \
+         /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka_broker:9092 --create --if-not-exists --topic snapshot_topic --partitions 1 --replication-factor 1 && \
+         /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka_broker:9092 --create --if-not-exists --topic stock_counts_topic --partitions 1 --replication-factor 1 && \
+         /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka_broker:9092 --create --if-not-exists --topic dim_skus_topic --partitions 1 --replication-factor 1 && \
+         /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka_broker:9092 --create --if-not-exists --topic dim_warehouses_topic --partitions 1 --replication-factor 1 && \
+         /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka_broker:9092 --create --if-not-exists --topic dim_suppliers_topic --partitions 1 --replication-factor 1 && \
+         /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka_broker:9092 --create --if-not-exists --topic dim_customers_topic --partitions 1 --replication-factor 1 && \
+         echo 'Kafka topics ready'"
     restart: "no"
     networks:
       - data_network
@@ -199,12 +208,86 @@ services:
     networks:
       - data_network
 
+  chatserver:
+    build:
+      context: ./apps/chatserver
+      dockerfile: Dockerfile
+    container_name: inventory_chatserver
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    environment:
+      CHATSERVER_HOST: 0.0.0.0
+      CHATSERVER_PORT: 8001
+      CHATSERVER_RELOAD: "false"
+      CHATSERVER_LOG_LEVEL: info
+      CHATSERVER_SOCKETIO_PATH: socket.io
+      CHATSERVER_PUBLIC_NAMESPACES: warehouse
+      CHATSERVER_ALLOW_ORIGINS: ${CHATSERVER_ALLOW_ORIGINS:-http://localhost:3000}
+      CHATSERVER_DATABASE_PATH: /data/chatserver.db
+      CHATSERVER_CLICKHOUSE_HOST: clickhouse_db
+      CHATSERVER_CLICKHOUSE_PORT: 8123
+      CHATSERVER_CLICKHOUSE_USERNAME: password
+      CHATSERVER_CLICKHOUSE_PASSWORD: admin
+      CHATSERVER_CLICKHOUSE_DATABASE: inventory_mart
+      CHATSERVER_CLICKHOUSE_RAW_DATABASE: inventory_raw
+      CHATSERVER_CLICKHOUSE_MART_DATABASE: inventory_mart
+      CHATSERVER_AZURE_OPENAI_ENDPOINT: ${CHATSERVER_AZURE_OPENAI_ENDPOINT:-}
+      CHATSERVER_AZURE_OPENAI_API_KEY: ${CHATSERVER_AZURE_OPENAI_API_KEY:-}
+      CHATSERVER_AZURE_OPENAI_API_VERSION: ${CHATSERVER_AZURE_OPENAI_API_VERSION:-2024-10-21}
+      CHATSERVER_AZURE_OPENAI_DEPLOYMENT_NAME: ${CHATSERVER_AZURE_OPENAI_DEPLOYMENT_NAME:-gpt-5.2}
+      CHATSERVER_AZURE_OPENAI_MAX_RETRIES: ${CHATSERVER_AZURE_OPENAI_MAX_RETRIES:-2}
+      CHATSERVER_OPENAI_API_KEY: ${CHATSERVER_OPENAI_API_KEY:-}
+      CHATSERVER_OPENAI_BASE_URL: ${CHATSERVER_OPENAI_BASE_URL:-}
+      CHATSERVER_OPENAI_MODEL: ${CHATSERVER_OPENAI_MODEL:-gpt-5.2}
+      CHATSERVER_OPENAI_TIMEOUT_SECONDS: ${CHATSERVER_OPENAI_TIMEOUT_SECONDS:-60}
+    ports:
+      - "8001:8001"
+    volumes:
+      - chatserver_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8001/health').getcode()==200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    networks:
+      - data_network
+
+  chatui:
+    build:
+      context: ./apps/chatui
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_CHATSERVER_URL: ${NEXT_PUBLIC_CHATSERVER_URL:-http://localhost:8001}
+        NEXT_PUBLIC_CHATSERVER_SOCKET_PATH: ${NEXT_PUBLIC_CHATSERVER_SOCKET_PATH:-/socket.io}
+        NEXT_PUBLIC_CHAT_NAMESPACE: ${NEXT_PUBLIC_CHAT_NAMESPACE:-warehouse}
+    container_name: inventory_chatui
+    depends_on:
+      chatserver:
+        condition: service_healthy
+    environment:
+      NEXT_PUBLIC_CHATSERVER_URL: ${NEXT_PUBLIC_CHATSERVER_URL:-http://localhost:8001}
+      NEXT_PUBLIC_CHATSERVER_SOCKET_PATH: ${NEXT_PUBLIC_CHATSERVER_SOCKET_PATH:-/socket.io}
+      NEXT_PUBLIC_CHAT_NAMESPACE: ${NEXT_PUBLIC_CHAT_NAMESPACE:-warehouse}
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    networks:
+      - data_network
+
 volumes:
   kafka_data:
   clickhouse_data:
   sqlserver_data:
   logstash_state:
   grafana_data:
+  chatserver_data:
 
 networks:
   data_network:

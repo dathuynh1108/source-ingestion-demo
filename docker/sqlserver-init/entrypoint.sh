@@ -29,7 +29,8 @@ if [ "${ready}" -ne 1 ]; then
 fi
 
 echo "[sqlserver-init] Applying schema and stored procedures..."
-"${SQLCMD}" -S "${HOST},${PORT}" -U "${USER_NAME}" -P "${PASSWORD}" -No -v DB_NAME="${DATABASE}" -i /opt/bootstrap/init_inventory.sql
+# -I: QUOTED_IDENTIFIER ON (required for PERSISTED computed columns, e.g. purchase_order_lines.line_amount)
+"${SQLCMD}" -S "${HOST},${PORT}" -U "${USER_NAME}" -P "${PASSWORD}" -No -I -v DB_NAME="${DATABASE}" -i /opt/bootstrap/init_inventory.sql
 
 echo "[sqlserver-init] Seeding historical transactions if table is empty..."
 "${SQLCMD}" -S "${HOST},${PORT}" -U "${USER_NAME}" -P "${PASSWORD}" -No -Q "
@@ -45,6 +46,13 @@ echo "[sqlserver-init] Current source volume:"
 "${SQLCMD}" -S "${HOST},${PORT}" -U "${USER_NAME}" -P "${PASSWORD}" -No -Q "
 SELECT COUNT(*) AS total_transactions
 FROM ${DATABASE}.dbo.inventory_transactions;
+"
+
+echo "[sqlserver-init] Reporting layer (dim_date, PO, transfers) and daily fact snapshot for BI..."
+"${SQLCMD}" -S "${HOST},${PORT}" -U "${USER_NAME}" -P "${PASSWORD}" -No -Q "
+EXEC ${DATABASE}.dbo.sp_seed_reporting_layer;
+EXEC ${DATABASE}.dbo.sp_refresh_fact_daily_inventory_movements;
+EXEC ${DATABASE}.dbo.sp_refresh_inventory_snapshot_daily;
 "
 
 echo "[sqlserver-init] Done."

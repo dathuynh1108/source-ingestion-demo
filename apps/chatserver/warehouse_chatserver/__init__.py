@@ -1,0 +1,1 @@
+"""Warehouse chat server package."""
