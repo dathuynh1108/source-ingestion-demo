@@ -1,0 +1,546 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Open PO Quantity",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT sum(qty_open) AS value\nFROM inventory_mart.fact_purchase_order_lines\nWHERE qty_open > 0",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      }
+    },
+    {
+      "id": 2,
+      "title": "Open PO Lines",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT count() AS value\nFROM inventory_mart.fact_purchase_order_lines\nWHERE qty_open > 0",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      }
+    },
+    {
+      "id": 3,
+      "title": "Average Supplier Lead Time",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT round(avg(lead_time_days), 2) AS value\nFROM inventory_mart.dim_supplier",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      }
+    },
+    {
+      "id": 4,
+      "title": "Average Daily Sold Qty (30 days)",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT round(sum(qty) / 30, 2) AS value\nFROM inventory_mart.fact_sales_order_lines\nWHERE created_date >= today() - 30",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      }
+    },
+    {
+      "id": 5,
+      "title": "Items Below Reorder Point",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\n\n            SELECT countIf(p.reorder_point > 0 AND s.available_qty < p.reorder_point) AS value\n            FROM inventory_mart.fact_inventory_snapshot_daily s\n            LEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\n            WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      }
+    },
+    {
+      "id": 6,
+      "title": "Suggested Reorder Qty",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\n\n            SELECT round(sum(greatest(p.max_stock - s.available_qty, 0)), 0) AS value\n            FROM inventory_mart.fact_inventory_snapshot_daily s\n            LEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\n            WHERE\n              s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n              AND p.reorder_point > 0\n              AND s.available_qty < p.reorder_point",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      }
+    },
+    {
+      "id": 7,
+      "title": "Inbound vs Outbound (90 days)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT\n  event_date AS time,\n  sum(qty_in) AS inbound_qty,\n  sum(qty_out) AS outbound_qty\nFROM inventory_mart.fact_inventory_movement\nWHERE event_date >= today() - 90\nGROUP BY event_date\nORDER BY event_date",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Receiving vs Dispatch by Warehouse (30 days)",
+      "type": "barchart",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT\n  coalesce(w.warehouse_name, m.warehouse_id) AS warehouse,\n  sum(m.qty_in) AS received_qty,\n  sum(m.qty_out) AS dispatched_qty\nFROM inventory_mart.fact_inventory_movement m\nLEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = m.warehouse_id\nWHERE m.event_date >= today() - 30\nGROUP BY warehouse\nORDER BY received_qty DESC",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      }
+    },
+    {
+      "id": 9,
+      "title": "Top Moving SKUs (30 days)",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT\n  m.sku_id AS sku_id,\n  coalesce(p.sku_name, m.sku_id) AS sku_name,\n  coalesce(p.category, 'Unknown') AS category,\n  sum(m.qty_in) AS qty_in,\n  sum(m.qty_out) AS qty_out,\n  sum(abs(m.qty_change)) AS movement_volume,\n  round(sum(abs(m.qty_change) * toFloat64(dp.unit_cost)), 2) AS movement_value_proxy\nFROM inventory_mart.fact_inventory_movement m\nLEFT JOIN inventory_mart.dim_product p ON p.sku_id = m.sku_id\nLEFT JOIN inventory_mart.dim_product dp ON dp.sku_id = m.sku_id\nWHERE m.event_date >= today() - 30\nGROUP BY m.sku_id, sku_name, category\nORDER BY movement_volume DESC\nLIMIT 20",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      }
+    },
+    {
+      "id": 10,
+      "title": "Slow-moving SKUs (no movement in 30 days)",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\n,\n            latest_stock AS (\n              SELECT\n                s.sku_id,\n                round(sum(s.available_qty), 2) AS available_qty,\n                round(sum(s.inventory_value), 2) AS inventory_value\n              FROM inventory_mart.fact_inventory_snapshot_daily s\n              WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n              GROUP BY s.sku_id\n            ),\n            recent_moves AS (\n              SELECT\n                sku_id,\n                max(event_date) AS last_event_date\n              FROM inventory_mart.fact_inventory_movement\n              GROUP BY sku_id\n            )\n            SELECT\n              ls.sku_id AS sku_id,\n              coalesce(p.sku_name, ls.sku_id) AS sku_name,\n              coalesce(p.category, 'Unknown') AS category,\n              ls.available_qty,\n              ls.inventory_value,\n              rm.last_event_date\n            FROM latest_stock ls\n            LEFT JOIN recent_moves rm ON rm.sku_id = ls.sku_id\n            LEFT JOIN inventory_mart.dim_product p ON p.sku_id = ls.sku_id\n            WHERE ls.available_qty > 0 AND (rm.last_event_date IS NULL OR rm.last_event_date < today() - 30)\n            ORDER BY ls.inventory_value DESC, ls.available_qty DESC\n            LIMIT 20",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      }
+    },
+    {
+      "id": 11,
+      "title": "Replenishment Recommendation",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\n,\n            current_stock AS (\n              SELECT\n                sku_id,\n                sum(available_qty) AS available_qty\n              FROM inventory_mart.fact_inventory_snapshot_daily\n              WHERE snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n              GROUP BY sku_id\n            ),\n            daily_demand AS (\n              SELECT\n                sku_id,\n                round(sum(qty) / 30, 2) AS avg_daily_demand\n              FROM inventory_mart.fact_sales_order_lines\n              WHERE created_date >= today() - 30\n              GROUP BY sku_id\n            )\n            SELECT\n              cs.sku_id AS sku_id,\n              coalesce(p.sku_name, cs.sku_id) AS sku_name,\n              coalesce(p.category, 'Unknown') AS category,\n              cs.available_qty,\n              p.reorder_point,\n              p.max_stock,\n              coalesce(dd.avg_daily_demand, 0) AS avg_daily_demand,\n              greatest(p.max_stock - cs.available_qty, 0) AS recommended_reorder_qty\n            FROM current_stock cs\n            LEFT JOIN inventory_mart.dim_product p ON p.sku_id = cs.sku_id\n            LEFT JOIN daily_demand dd ON dd.sku_id = cs.sku_id\n            WHERE p.reorder_point > 0 AND cs.available_qty < p.reorder_point\n            ORDER BY recommended_reorder_qty DESC, avg_daily_demand DESC\n            LIMIT 50",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      }
+    }
+  ],
+  "refresh": "10m",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": [
+    "inventory",
+    "movement",
+    "replenishment"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-90d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Inventory Movement & Replenishment",
+  "uid": "inventory-movement-replenishment",
+  "version": 1,
+  "weekStart": ""
+}
