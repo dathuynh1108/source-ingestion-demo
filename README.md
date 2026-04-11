@@ -29,6 +29,7 @@ docker compose -f docker-compose.yml --profile live-gen up -d --build
 ```bash
 docker compose -f docker-compose.yml ps
 docker compose -f docker-compose.yml logs -f
+docker compose -f docker-compose.yml logs -f sqlserver-live-generator logstash --tail=200
 ```
 
 5. Stop:
@@ -42,3 +43,17 @@ docker compose -f docker-compose.yml down
 ```bash
 docker compose -f docker-compose.yml down -v
 ```
+
+7. Open Grafana:
+
+```text
+http://localhost:3000
+```
+
+Default credentials:
+
+```text
+admin / admin123
+```
+
+Grafana provisions the dashboard automatically from `grafana/dashboards/warehouse_inventory_dashboard.json`.

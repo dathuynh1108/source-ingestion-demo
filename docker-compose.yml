@@ -178,11 +178,33 @@ services:
     networks:
       - data_network
 
+  grafana:
+    image: grafana/grafana-oss:11.2.0
+    container_name: grafana_dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin123}
+      GF_USERS_DEFAULT_THEME: light
+      GF_INSTALL_PLUGINS: grafana-clickhouse-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - data_network
+
 volumes:
   kafka_data:
   clickhouse_data:
   sqlserver_data:
   logstash_state:
+  grafana_data:
 
 networks:
   data_network:
