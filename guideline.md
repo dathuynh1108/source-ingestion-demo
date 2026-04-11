@@ -1,11 +1,11 @@
-To build an **inventory management Power BI dashboard template**, you need to define it in five layers:
+To build an **inventory management Grafana BI dashboard template**, you need to define it in five layers:
 
 1. **business requirements**
 2. **data model requirements**
 3. **core KPI requirements**
 4. **visual/dashboard component requirements**
 5. **technical and usability requirements**
-
+W
 Below is a full structure you can use as a template.
 
 ---
@@ -209,7 +209,7 @@ Fields:
 
 ---
 
-# 4. Data model requirements in Power BI
+# 4. Data model requirements in Grafana BI
 
 You should build the model in a **star schema**, not one flat table.
 
@@ -258,7 +258,7 @@ If the grain is unclear, your dashboard numbers will be inconsistent.
 
 # 4.4 ETL layer requirements (raw → staging → mart)
 
-Even if Power BI connects directly to a database, you should still organize the data pipeline into layers so the model is:
+Even if Grafana BI connects directly to a database, you should still organize the data pipeline into layers so the model is:
 
 * easier to debug
 * easier to extend
@@ -300,7 +300,7 @@ Guidelines:
 
 ## 4.4.3 Mart layer (analytics-ready)
 
-Purpose: provide reporting-ready tables for Power BI.
+Purpose: provide reporting-ready tables for Grafana BI.
 
 Guidelines:
 
@@ -325,7 +325,7 @@ Choose one approach and be consistent:
 * Schema-based: `raw.*`, `stg.*`, `mart.*`
 * Prefix-based: `raw_*`, `stg_*`, `mart_*`
 
-Power BI should primarily connect to the **mart** layer.
+Grafana BI should primarily connect to the **mart** layer.
 
 ---
 
@@ -394,7 +394,7 @@ These are the main metrics the dashboard should include.
 
 ---
 
-# 6. Required calculations / measures in Power BI
+# 6. Required calculations / measures in Grafana BI
 
 You will need DAX measures, not only raw columns.
 
@@ -748,7 +748,7 @@ These rules must be agreed first, otherwise users will challenge the dashboard.
 
 ---
 
-# 10. Visual components you specifically need in Power BI
+# 10. Visual components you specifically need in Grafana BI
 
 Here is the full list of visual types commonly required.
 
@@ -1011,7 +1011,7 @@ Before development, clarify these with stakeholders:
 
 # 19. Best practice recommendation
 
-For inventory dashboards in Power BI, the strongest setup is usually:
+For inventory dashboards in Grafana BI, the strongest setup is usually:
 
 * **daily inventory snapshot fact**
 * **movement transaction fact**
@@ -1046,4 +1046,4 @@ Your requirements document should include:
 
 ---
 
-If you want, I can turn this into a **formal dashboard requirement document template** or a **page-by-page Power BI wireframe structure**.
+If you want, I can turn this into a **formal dashboard requirement document template** or a **page-by-page Grafana BI wireframe structure**.
