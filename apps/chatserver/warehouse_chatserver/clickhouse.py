@@ -496,6 +496,7 @@ class ClickHouseService:
             CROSS JOIN latest_snapshot
             LEFT JOIN product_dim p ON p.sku_id = s.sku_id
             WHERE s.snapshot_date = latest_snapshot.snapshot_date
+            GROUP BY latest_snapshot.snapshot_date
             """
         )
 
