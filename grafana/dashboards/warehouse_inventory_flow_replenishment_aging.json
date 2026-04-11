@@ -1,0 +1,962 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 13,
+      "panels": [],
+      "title": "3) Inventory Movement Analysis",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse_demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 14,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "queryType": "timeSeries",
+          "rawSql": "SELECT toDateTime(event_date) AS time, sum(qty_in) AS qty_in, sum(qty_out) AS qty_out FROM inventory_mart.fact_inventory_movement m LEFT JOIN inventory_mart.dim_product p ON m.sku_id = p.sku_id WHERE $__timeFilter(event_date) AND ('${warehouse:raw}'='__all' OR m.warehouse_id IN (${warehouse:singlequote})) AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote})) AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote})) GROUP BY time ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "Inbound vs Outbound Trend",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse_demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "id": 15,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT m.sku_id, ifNull(p.sku_name, m.sku_id) AS sku_name, sum(m.qty_out) AS outbound_qty, sum(m.qty_in) AS inbound_qty, sum(m.qty_in - m.qty_out) AS net_qty FROM inventory_mart.fact_inventory_movement m LEFT JOIN inventory_mart.dim_product p ON m.sku_id = p.sku_id WHERE $__timeFilter(event_date) AND ('${warehouse:raw}'='__all' OR m.warehouse_id IN (${warehouse:singlequote})) AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote})) AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote})) GROUP BY m.sku_id, sku_name ORDER BY outbound_qty DESC LIMIT 15",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Moving SKUs",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse_demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "id": 16,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "rawSql": "SELECT m.warehouse_id, sum(m.qty_in) AS total_inbound, sum(m.qty_out) AS total_outbound, sum(m.qty_in - m.qty_out) AS net_movement, sum(CASE WHEN m.event_type='adjustment' THEN abs(m.qty_change) ELSE 0 END) AS adjustment_qty FROM inventory_mart.fact_inventory_movement m LEFT JOIN inventory_mart.dim_product p ON m.sku_id = p.sku_id WHERE $__timeFilter(event_date) AND ('${warehouse:raw}'='__all' OR m.warehouse_id IN (${warehouse:singlequote})) AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote})) AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote})) GROUP BY m.warehouse_id ORDER BY adjustment_qty DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Movement Summary by Warehouse",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "id": 17,
+      "panels": [],
+      "title": "4) Replenishment / Procurement",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse_demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 29
+      },
+      "id": 18,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "rawSql": "SELECT sum(qty_open) AS open_po_qty FROM inventory_mart.fact_purchase_order_lines f LEFT JOIN inventory_mart.dim_product p ON f.sku_id = p.sku_id WHERE $__timeFilter(created_date) AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote})) AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Open PO Quantity",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse_demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 29
+      },
+      "id": 19,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "rawSql": "SELECT round(avg(lead_time_days),2) AS avg_supplier_lead_time_days FROM inventory_mart.dim_supplier WHERE ('${supplier:raw}'='__all' OR supplier_name IN (${supplier:singlequote}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Avg Supplier Lead Time (days)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse_demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 29
+      },
+      "id": 20,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "rawSql": "SELECT if(count()=0,0,round(sum(if(lead_time_days <= 7,1,0))/count(),4)) AS supplier_on_time_sla_rate FROM inventory_mart.dim_supplier WHERE ('${supplier:raw}'='__all' OR supplier_name IN (${supplier:singlequote}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Supplier SLA On-time Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse_demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 33
+      },
+      "id": 21,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "queryType": "timeSeries",
+          "rawSql": "SELECT toDateTime(created_date) AS time, sum(qty_open) AS open_qty, sum(qty_received) AS received_qty FROM inventory_mart.fact_purchase_order_lines f LEFT JOIN inventory_mart.dim_product p ON f.sku_id = p.sku_id WHERE $__timeFilter(created_date) AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote})) AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote})) GROUP BY time ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "PO Open vs Received Trend",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse_demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 42
+      },
+      "id": 22,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "rawSql": "WITH latest AS (SELECT max(snapshot_date) AS d FROM inventory_mart.fact_inventory_snapshot_daily), demand AS (SELECT sku_id, avg(qty) AS avg_daily_demand FROM inventory_mart.fact_sales_order_lines WHERE created_date >= addDays(today(), -30) GROUP BY sku_id), open_po AS (SELECT sku_id, sum(qty_open) AS open_po_qty FROM inventory_mart.fact_purchase_order_lines GROUP BY sku_id) SELECT p.sku_id, p.sku_name, p.reorder_point, p.max_stock, sum(s.available_qty) AS current_available, ifNull(d.avg_daily_demand,0) AS avg_daily_demand, ifNull(o.open_po_qty,0) AS open_po_qty, greatest(p.max_stock - sum(s.available_qty) - ifNull(o.open_po_qty,0), 0) AS recommended_reorder_qty FROM inventory_mart.fact_inventory_snapshot_daily s INNER JOIN inventory_mart.dim_product p ON s.sku_id = p.sku_id LEFT JOIN demand d ON p.sku_id = d.sku_id LEFT JOIN open_po o ON p.sku_id = o.sku_id WHERE s.snapshot_date = (SELECT d FROM latest) AND ('${warehouse:raw}'='__all' OR s.warehouse_id IN (${warehouse:singlequote})) AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote})) AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote})) GROUP BY p.sku_id, p.sku_name, p.reorder_point, p.max_stock, d.avg_daily_demand, o.open_po_qty HAVING current_available < p.reorder_point ORDER BY recommended_reorder_qty DESC LIMIT 25",
+          "refId": "A"
+        }
+      ],
+      "title": "Replenishment Recommendation",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      },
+      "id": 23,
+      "panels": [],
+      "title": "5) Aging / Slow-moving / Dead Stock",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse_demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 54
+      },
+      "id": 24,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "targets": [
+        {
+          "rawSql": "WITH latest AS (SELECT max(snapshot_date) AS d FROM inventory_mart.fact_inventory_snapshot_daily), last_move AS (SELECT warehouse_id, sku_id, max(event_date) AS last_event_date FROM inventory_mart.fact_inventory_movement GROUP BY warehouse_id, sku_id) SELECT aging_bucket, round(sum(inventory_value),2) AS aging_value FROM (SELECT s.warehouse_id, s.sku_id, s.inventory_value, dateDiff('day', ifNull(l.last_event_date, s.snapshot_date), (SELECT d FROM latest)) AS days_no_movement, CASE WHEN dateDiff('day', ifNull(l.last_event_date, s.snapshot_date), (SELECT d FROM latest)) <= 30 THEN '0-30' WHEN dateDiff('day', ifNull(l.last_event_date, s.snapshot_date), (SELECT d FROM latest)) <= 60 THEN '31-60' WHEN dateDiff('day', ifNull(l.last_event_date, s.snapshot_date), (SELECT d FROM latest)) <= 90 THEN '61-90' ELSE '90+' END AS aging_bucket FROM inventory_mart.fact_inventory_snapshot_daily s LEFT JOIN last_move l ON s.warehouse_id = l.warehouse_id AND s.sku_id = l.sku_id LEFT JOIN inventory_mart.dim_product p ON s.sku_id = p.sku_id WHERE s.snapshot_date = (SELECT d FROM latest) AND ('${warehouse:raw}'='__all' OR s.warehouse_id IN (${warehouse:singlequote})) AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote})) AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))) t GROUP BY aging_bucket ORDER BY aging_bucket",
+          "refId": "A"
+        }
+      ],
+      "title": "Aging Value Buckets",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse_demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 54
+      },
+      "id": 25,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "rawSql": "WITH latest AS (SELECT max(snapshot_date) AS d FROM inventory_mart.fact_inventory_snapshot_daily), last_move AS (SELECT warehouse_id, sku_id, max(event_date) AS last_event_date FROM inventory_mart.fact_inventory_movement GROUP BY warehouse_id, sku_id) SELECT s.warehouse_id, s.sku_id, p.sku_name, s.available_qty, round(s.inventory_value,2) AS inventory_value, dateDiff('day', ifNull(l.last_event_date, s.snapshot_date), (SELECT d FROM latest)) AS days_no_movement FROM inventory_mart.fact_inventory_snapshot_daily s LEFT JOIN last_move l ON s.warehouse_id = l.warehouse_id AND s.sku_id = l.sku_id LEFT JOIN inventory_mart.dim_product p ON s.sku_id = p.sku_id WHERE s.snapshot_date = (SELECT d FROM latest) AND dateDiff('day', ifNull(l.last_event_date, s.snapshot_date), (SELECT d FROM latest)) > 90 AND ('${warehouse:raw}'='__all' OR s.warehouse_id IN (${warehouse:singlequote})) AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote})) AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote})) ORDER BY inventory_value DESC LIMIT 30",
+          "refId": "A"
+        }
+      ],
+      "title": "Dead Stock Candidates (>90 days no movement)",
+      "type": "table"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["warehouse", "inventory", "movement", "replenishment", "aging"],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "__all"
+        },
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "clickhouse_demo"
+        },
+        "definition": "SELECT DISTINCT region FROM inventory_mart.dim_warehouse WHERE region != '' ORDER BY region",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Region",
+        "multi": true,
+        "name": "region",
+        "options": [],
+        "query": "SELECT DISTINCT region FROM inventory_mart.dim_warehouse WHERE region != '' ORDER BY region",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "__all"
+        },
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "clickhouse_demo"
+        },
+        "definition": "SELECT warehouse_id FROM inventory_mart.dim_warehouse WHERE ('${region:raw}'='__all' OR region IN (${region:singlequote})) ORDER BY warehouse_id",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Warehouse",
+        "multi": true,
+        "name": "warehouse",
+        "options": [],
+        "query": "SELECT warehouse_id FROM inventory_mart.dim_warehouse WHERE ('${region:raw}'='__all' OR region IN (${region:singlequote})) ORDER BY warehouse_id",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "__all"
+        },
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "clickhouse_demo"
+        },
+        "definition": "SELECT DISTINCT category FROM inventory_mart.dim_product WHERE category != '' ORDER BY category",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Category",
+        "multi": true,
+        "name": "category",
+        "options": [],
+        "query": "SELECT DISTINCT category FROM inventory_mart.dim_product WHERE category != '' ORDER BY category",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "__all"
+        },
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "clickhouse_demo"
+        },
+        "definition": "SELECT DISTINCT brand FROM inventory_mart.dim_product WHERE ('${category:raw}'='__all' OR category IN (${category:singlequote})) AND brand != '' ORDER BY brand",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Brand",
+        "multi": true,
+        "name": "brand",
+        "options": [],
+        "query": "SELECT DISTINCT brand FROM inventory_mart.dim_product WHERE ('${category:raw}'='__all' OR category IN (${category:singlequote})) AND brand != '' ORDER BY brand",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "__all"
+        },
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "clickhouse_demo"
+        },
+        "definition": "SELECT DISTINCT supplier_name FROM inventory_mart.dim_supplier WHERE supplier_name != '' ORDER BY supplier_name",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Supplier",
+        "multi": true,
+        "name": "supplier",
+        "options": [],
+        "query": "SELECT DISTINCT supplier_name FROM inventory_mart.dim_supplier WHERE supplier_name != '' ORDER BY supplier_name",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "__all"
+        },
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "clickhouse_demo"
+        },
+        "definition": "SELECT DISTINCT sku_id FROM inventory_mart.dim_product WHERE ('${category:raw}'='__all' OR category IN (${category:singlequote})) AND ('${brand:raw}'='__all' OR brand IN (${brand:singlequote})) ORDER BY sku_id",
+        "hide": 0,
+        "includeAll": true,
+        "label": "SKU",
+        "multi": true,
+        "name": "sku",
+        "options": [],
+        "query": "SELECT DISTINCT sku_id FROM inventory_mart.dim_product WHERE ('${category:raw}'='__all' OR category IN (${category:singlequote})) AND ('${brand:raw}'='__all' OR brand IN (${brand:singlequote})) ORDER BY sku_id",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "__all"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Stock Status",
+        "multi": true,
+        "name": "stock_status",
+        "options": [
+          {
+            "selected": true,
+            "text": "All",
+            "value": "__all"
+          },
+          {
+            "selected": false,
+            "text": "Stockout",
+            "value": "Stockout"
+          },
+          {
+            "selected": false,
+            "text": "Low stock",
+            "value": "Low stock"
+          },
+          {
+            "selected": false,
+            "text": "Healthy",
+            "value": "Healthy"
+          },
+          {
+            "selected": false,
+            "text": "Overstock",
+            "value": "Overstock"
+          }
+        ],
+        "query": "All,Stockout,Low stock,Healthy,Overstock",
+        "skipUrlSync": false,
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Warehouse Inventory - Movement, Replenishment & Aging",
+  "uid": "warehouse-inventory-flow-replenishment",
+  "version": 1,
+  "weekStart": ""
+}
