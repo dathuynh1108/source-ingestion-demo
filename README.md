@@ -63,13 +63,52 @@ docker compose -f docker-compose.yml up -d --build
 docker compose -f docker-compose.yml --profile live-gen up -d --build
 ```
 
+### 3b) Mart sync job modes (manual / auto schedule)
+
+#### Manual (one-off refresh)
+
+Use when you want to sync mart on demand:
+
+```bash
+bash scripts/refresh_mart_facts.sh
+```
+
+#### Auto schedule (every 30s)
+
+Use when you want dashboards to update continuously:
+
+```bash
+docker compose -f docker-compose.yml --profile mart-sync up -d mart-refresher
+```
+
+This runs `mart-refresher` independently and syncs `inventory_mart.fact_*` every 30 seconds.
+
+To stop only the auto-sync job:
+
+```bash
+docker compose -f docker-compose.yml --profile mart-sync stop mart-refresher
+docker compose -f docker-compose.yml --profile mart-sync rm -f mart-refresher
+```
+
+To change schedule interval, set env var before running:
+
+```bash
+MART_REFRESH_INTERVAL_SECONDS=60 docker compose -f docker-compose.yml --profile mart-sync up -d mart-refresher
+```
+
+If you need full realtime demo, run both profiles:
+
+```bash
+docker compose -f docker-compose.yml --profile live-gen --profile mart-sync up -d --build
+```
+
 ### 4) Refresh mart dimensions (for Grafana/BI reports)
 
 ```bash
 bash scripts/refresh_mart_dims.sh
 ```
 
-### 5) Refresh mart facts (for Grafana/BI reports)
+### 5) Refresh mart facts manually (if not using auto schedule)
 
 ```bash
 bash scripts/refresh_mart_facts.sh
@@ -125,4 +164,4 @@ Default credentials:
 admin / admin123
 ```
 
-Grafana provisions the dashboard automatically from `grafana/dashboards/warehouse_inventory_dashboard.json`.
+Grafana provisions dashboards automatically from `grafana/dashboards/` (folder `Warehouse Inventory`).

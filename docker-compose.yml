@@ -157,6 +157,27 @@ services:
     networks:
       - data_network
 
+  mart-refresher:
+    profiles: ["mart-sync"]
+    image: clickhouse/clickhouse-server:25.8.15.35
+    container_name: mart_refresher
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      logstash:
+        condition: service_started
+    environment:
+      MART_REFRESH_INTERVAL_SECONDS: ${MART_REFRESH_INTERVAL_SECONDS:-30}
+    command:
+      - /bin/sh
+      - -c
+      - "while true; do clickhouse-client --host clickhouse_db --user password --password admin --multiquery --queries-file /scripts/refresh_mart_facts.sql; sleep $${MART_REFRESH_INTERVAL_SECONDS}; done"
+    volumes:
+      - ./scripts/refresh_mart_facts.sql:/scripts/refresh_mart_facts.sql:ro
+    restart: unless-stopped
+    networks:
+      - data_network
+
   logstash:
     build:
       context: .
