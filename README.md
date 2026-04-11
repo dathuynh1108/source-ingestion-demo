@@ -27,6 +27,7 @@ This will:
 - wait for services to be ready
 - populate ClickHouse **raw** (`inventory_raw.*`)
 - populate ClickHouse **mart dims** (`inventory_mart.dim_*`)
+- populate ClickHouse **mart facts** (`inventory_mart.fact_*`)
 - start the warehouse chat backend and UI
 - run row-count checks (`scripts/check_population.sh`)
 
@@ -62,26 +63,32 @@ docker compose -f docker-compose.yml up -d --build
 docker compose -f docker-compose.yml --profile live-gen up -d --build
 ```
 
-### 4) Refresh mart dimensions (for Power BI)
+### 4) Refresh mart dimensions (for Grafana/BI reports)
 
 ```bash
 bash scripts/refresh_mart_dims.sh
 ```
 
-### 5) Verify population (SQL Server + ClickHouse raw/mart)
+### 5) Refresh mart facts (for Grafana/BI reports)
+
+```bash
+bash scripts/refresh_mart_facts.sh
+```
+
+### 6) Verify population (SQL Server + ClickHouse raw/mart)
 
 ```bash
 bash scripts/check_population.sh
 ```
 
-### 6) Open the warehouse chat app
+### 7) Open the warehouse chat app
 
 - UI: `http://localhost:3000`
 - Backend docs: `http://localhost:8001/docs`
 
 If neither Azure OpenAI nor the OpenAI-compatible fallback is configured, the chat server still runs in fallback mode with warehouse-specific canned reasoning on top of ClickHouse queries.
 
-### 7) Check status and logs
+### 8) Check status and logs
 
 ```bash
 docker compose -f docker-compose.yml ps
@@ -89,13 +96,13 @@ docker compose -f docker-compose.yml logs -f
 docker compose -f docker-compose.yml logs -f sqlserver-live-generator logstash --tail=200
 ```
 
-### 8) Stop
+### 9) Stop
 
 ```bash
 docker compose -f docker-compose.yml down
 ```
 
-### 9) Stop and remove volumes (reset everything)
+### 10) Stop and remove volumes (reset everything)
 
 ```bash
 docker compose -f docker-compose.yml down -v

@@ -11,7 +11,7 @@ datasources:
       host: clickhouse
       port: 8123
       protocol: http
-      defaultDatabase: inventory_db
+      defaultDatabase: inventory_mart
       username: password
       tlsSkipVerify: true
     secureJsonData:

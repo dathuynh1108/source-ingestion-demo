@@ -114,6 +114,10 @@ log "Refreshing mart dimensions..."
 bash "${ROOT_DIR}/scripts/refresh_mart_dims.sh"
 
 log ""
+log "Refreshing mart facts..."
+bash "${ROOT_DIR}/scripts/refresh_mart_facts.sh"
+
+log ""
 log "Running population checks (SQL Server + ClickHouse raw/mart)..."
 bash "${ROOT_DIR}/scripts/check_population.sh"
 
