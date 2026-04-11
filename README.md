@@ -63,7 +63,7 @@ docker compose -f docker-compose.yml up -d --build
 docker compose -f docker-compose.yml --profile live-gen up -d --build
 ```
 
-### 3b) Mart sync job modes (manual / auto schedule)
+### 4) Mart sync job modes (manual / auto schedule)
 
 #### Manual (one-off refresh)
 
@@ -102,16 +102,10 @@ If you need full realtime demo, run both profiles:
 docker compose -f docker-compose.yml --profile live-gen --profile mart-sync up -d --build
 ```
 
-### 4) Refresh mart dimensions (for Grafana/BI reports)
+### 5) Refresh mart dimensions (for Grafana/BI reports)
 
 ```bash
 bash scripts/refresh_mart_dims.sh
-```
-
-### 5) Refresh mart facts manually (if not using auto schedule)
-
-```bash
-bash scripts/refresh_mart_facts.sh
 ```
 
 ### 6) Verify population (SQL Server + ClickHouse raw/mart)
@@ -122,37 +116,12 @@ bash scripts/check_population.sh
 
 ### 7) Open the warehouse chat app
 
+If neither Azure OpenAI nor the OpenAI-compatible fallback is configured, the chat server still runs in fallback mode with warehouse-specific canned reasoning on top of ClickHouse queries.
+
 - UI: `http://localhost:3000`
 - Backend docs: `http://localhost:8001/docs`
 
-If neither Azure OpenAI nor the OpenAI-compatible fallback is configured, the chat server still runs in fallback mode with warehouse-specific canned reasoning on top of ClickHouse queries.
-
-### 8) Check status and logs
-
-```bash
-docker compose -f docker-compose.yml ps
-docker compose -f docker-compose.yml logs -f
-docker compose -f docker-compose.yml logs -f sqlserver-live-generator logstash --tail=200
-```
-
-### 9) Stop
-
-```bash
-docker compose -f docker-compose.yml down
-```
-
-### 10) Stop and remove volumes (reset everything)
-
-```bash
-docker compose -f docker-compose.yml down -v
-```
-
-## Where to query in ClickHouse
-
-- **Raw layer**: `inventory_raw`
-- **Mart layer (Power BI connects here)**: `inventory_mart`
-
-### 10). Open Grafana:
+### 8) Open Grafana Dashboards
 
 ```text
 http://localhost:3001
@@ -165,3 +134,30 @@ admin / admin123
 ```
 
 Grafana provisions dashboards automatically from `grafana/dashboards/` (folder `Warehouse Inventory`).
+
+### 9) Check status and logs
+
+```bash
+docker compose -f docker-compose.yml ps
+docker compose -f docker-compose.yml logs -f
+docker compose -f docker-compose.yml logs -f sqlserver-live-generator logstash --tail=200
+```
+
+`sqlserver-live-generator` logs are available only when profile `live-gen` is enabled.
+
+### 10a) Stop
+
+```bash
+docker compose -f docker-compose.yml down
+```
+
+### 10b) Stop and remove volumes (reset everything)
+
+```bash
+docker compose -f docker-compose.yml down -v
+```
+
+## Where to query in ClickHouse
+
+- **Raw layer**: `inventory_raw`
+- **Mart layer (Power BI connects here)**: `inventory_mart`
