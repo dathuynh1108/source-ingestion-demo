@@ -22,6 +22,7 @@ bash scripts/bootstrap_pipeline.sh
 ```
 
 This will:
+
 - bring up the full stack (`docker-compose.yml`)
 - wait for services to be ready
 - populate ClickHouse **raw** (`inventory_raw.*`)
@@ -108,7 +109,7 @@ docker compose -f docker-compose.yml down -v
 ### 10). Open Grafana:
 
 ```text
-http://localhost:3000
+http://localhost:3001
 ```
 
 Default credentials:

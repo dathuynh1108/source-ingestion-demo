@@ -5,7 +5,7 @@ To build an **inventory management Grafana BI dashboard template**, you need to 
 3. **core KPI requirements**
 4. **visual/dashboard component requirements**
 5. **technical and usability requirements**
-W
+
 Below is a full structure you can use as a template.
 
 ---
