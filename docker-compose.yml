@@ -167,6 +167,15 @@ services:
       logstash:
         condition: service_started
     environment:
+      # Refreshes rerun /scripts/refresh_mart_facts.sql on a fixed loop.
+      # Short intervals keep marts fresh for demos, but can add significant
+      # ClickHouse load as row counts and refresh query cost increase.
+      # Recommended starting points:
+      # - Small/demo datasets: 30-60 seconds
+      # - Medium datasets: 120-300 seconds
+      # - Large or production workloads: 300+ seconds after measuring query time
+      # Override MART_REFRESH_INTERVAL_SECONDS in .env or your deployment config
+      # to match data volume and acceptable freshness lag.
       MART_REFRESH_INTERVAL_SECONDS: ${MART_REFRESH_INTERVAL_SECONDS:-30}
     command:
       - /bin/sh

@@ -1,5 +1,5 @@
-#!/usr/bin/env sh
-set -eu
+#!/usr/bin/env bash
+set -euo pipefail
 
 SQLCMD="/opt/mssql-tools18/bin/sqlcmd"
 HOST="${MSSQL_HOST:-sqlserver}"
@@ -13,17 +13,15 @@ SEED_DAYS_BACK="${SEED_DAYS_BACK:-45}"
 echo "[sqlserver-init] Waiting for SQL Server on ${HOST}:${PORT}..."
 
 ready=0
-attempt=1
-while [ "$attempt" -le 90 ]; do
+for attempt in $(seq 1 90); do
   if "${SQLCMD}" -S "${HOST},${PORT}" -U "${USER_NAME}" -P "${PASSWORD}" -No -Q "SELECT 1" >/dev/null 2>&1; then
     ready=1
     break
   fi
-  attempt=$((attempt + 1))
   sleep 2
 done
 
-if [ "${ready}" -ne 1 ]; then
+if [[ "${ready}" -ne 1 ]]; then
   echo "[sqlserver-init] SQL Server is not ready in time."
   exit 1
 fi

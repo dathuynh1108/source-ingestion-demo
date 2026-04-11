@@ -12,7 +12,7 @@ datasources:
       port: 8123
       protocol: http
       defaultDatabase: inventory_mart
-      username: password
-      tlsSkipVerify: true
+      username: ${CLICKHOUSE_USERNAME}
+      tlsSkipVerify: false
     secureJsonData:
-      password: admin
+      password: ${CLICKHOUSE_PASSWORD}
