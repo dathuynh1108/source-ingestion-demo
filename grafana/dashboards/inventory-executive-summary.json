@@ -4,7 +4,7 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "id": null,
   "links": [],
   "panels": [
@@ -43,7 +43,7 @@
       ],
       "transparent": false,
       "options": {
-        "colorMode": "value",
+        "colorMode": "none",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
@@ -73,7 +73,19 @@
         "y": 0
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "unit": "short",
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
         "overrides": []
       },
       "targets": [
@@ -91,7 +103,7 @@
       ],
       "transparent": false,
       "options": {
-        "colorMode": "value",
+        "colorMode": "none",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
@@ -121,7 +133,19 @@
         "y": 0
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "unit": "short",
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
         "overrides": []
       },
       "targets": [
@@ -139,7 +163,7 @@
       ],
       "transparent": false,
       "options": {
-        "colorMode": "value",
+        "colorMode": "none",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
@@ -169,7 +193,19 @@
         "y": 0
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "unit": "short",
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
         "overrides": []
       },
       "targets": [
@@ -187,7 +223,7 @@
       ],
       "transparent": false,
       "options": {
-        "colorMode": "value",
+        "colorMode": "none",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
@@ -217,7 +253,23 @@
         "y": 0
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
         "overrides": []
       },
       "targets": [
@@ -265,7 +317,23 @@
         "y": 0
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
         "overrides": []
       },
       "targets": [
@@ -313,7 +381,28 @@
         "y": 4
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "drawStyle": "line",
+            "fillOpacity": 22,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 3,
+            "pointSize": 4,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "unit": "short",
+          "decimals": 2
+        },
         "overrides": []
       },
       "targets": [
@@ -358,8 +447,60 @@
         "y": 4
       },
       "fieldConfig": {
-        "defaults": {},
-        "overrides": []
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": true,
+            "drawStyle": "line",
+            "fillOpacity": 18,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 3,
+            "pointSize": 4,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "unit": "short",
+          "decimals": 2
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "inbound_qty"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "outbound_qty"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
       "targets": [
         {
@@ -403,7 +544,13 @@
         "y": 12
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short",
+          "decimals": 2
+        },
         "overrides": []
       },
       "targets": [
@@ -427,7 +574,7 @@
           "showLegend": false
         },
         "orientation": "auto",
-        "showValue": "auto",
+        "showValue": "always",
         "tooltip": {
           "mode": "single",
           "sort": "none"
@@ -451,7 +598,13 @@
         "y": 12
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short",
+          "decimals": 2
+        },
         "overrides": []
       },
       "targets": [
@@ -475,7 +628,7 @@
           "showLegend": false
         },
         "orientation": "auto",
-        "showValue": "auto",
+        "showValue": "always",
         "tooltip": {
           "mode": "single",
           "sort": "none"
@@ -499,8 +652,28 @@
         "y": 20
       },
       "fieldConfig": {
-        "defaults": {},
-        "overrides": []
+        "defaults": {
+          "unit": "short",
+          "decimals": 2
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "(?i)(available_qty|reorder_point|gap_qty|inventory_value)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          }
+        ]
       },
       "targets": [
         {
@@ -517,7 +690,7 @@
       ],
       "transparent": false,
       "options": {
-        "cellHeight": "sm",
+        "cellHeight": "md",
         "footer": {
           "show": false
         },
@@ -539,8 +712,28 @@
         "y": 20
       },
       "fieldConfig": {
-        "defaults": {},
-        "overrides": []
+        "defaults": {
+          "unit": "short",
+          "decimals": 2
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "(?i)(available_qty|max_stock|excess_qty|inventory_value)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          }
+        ]
       },
       "targets": [
         {
@@ -557,7 +750,7 @@
       ],
       "transparent": false,
       "options": {
-        "cellHeight": "sm",
+        "cellHeight": "md",
         "footer": {
           "show": false
         },

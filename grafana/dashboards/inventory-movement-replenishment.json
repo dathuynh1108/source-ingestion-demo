@@ -29,6 +29,8 @@
       "fieldConfig": {
         "defaults": {
           "mappings": [],
+          "unit": "short",
+          "decimals": 2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -43,7 +45,24 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "(?i)(qty|volume|value|reorder|cover|days|stock)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 4,
@@ -53,7 +72,7 @@
       },
       "id": 1,
       "options": {
-        "colorMode": "value",
+        "colorMode": "none",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
@@ -92,6 +111,8 @@
       "fieldConfig": {
         "defaults": {
           "mappings": [],
+          "unit": "short",
+          "decimals": 2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -106,7 +127,24 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "(?i)(qty|volume|value|reorder|cover|days|stock)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 4,
@@ -116,7 +154,7 @@
       },
       "id": 2,
       "options": {
-        "colorMode": "value",
+        "colorMode": "none",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
@@ -155,6 +193,8 @@
       "fieldConfig": {
         "defaults": {
           "mappings": [],
+          "unit": "none",
+          "decimals": 2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -164,12 +204,29 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 7
               }
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "(?i)(qty|volume|value|reorder|cover|days|stock)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 4,
@@ -218,6 +275,8 @@
       "fieldConfig": {
         "defaults": {
           "mappings": [],
+          "unit": "short",
+          "decimals": 2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -227,7 +286,7 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 999999999
               }
             ]
           }
@@ -242,7 +301,7 @@
       },
       "id": 4,
       "options": {
-        "colorMode": "value",
+        "colorMode": "none",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
@@ -281,6 +340,8 @@
       "fieldConfig": {
         "defaults": {
           "mappings": [],
+          "unit": "short",
+          "decimals": 2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -290,7 +351,7 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 1
               }
             ]
           }
@@ -344,6 +405,8 @@
       "fieldConfig": {
         "defaults": {
           "mappings": [],
+          "unit": "short",
+          "decimals": 2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -353,7 +416,7 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 1
               }
             ]
           }
@@ -418,16 +481,16 @@
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
+            "fillOpacity": 22,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
@@ -442,6 +505,8 @@
               "mode": "off"
             }
           },
+          "unit": "short",
+          "decimals": 2,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -527,6 +592,8 @@
               "mode": "off"
             }
           },
+          "unit": "short",
+          "decimals": 2,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -563,7 +630,7 @@
           "showLegend": false
         },
         "orientation": "auto",
-        "showValue": "auto",
+        "showValue": "always",
         "stacking": "none",
         "tooltip": {
           "hideZeros": false,
@@ -619,7 +686,24 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "(?i)(qty|volume|value|reorder|cover|days|stock)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
@@ -684,7 +768,24 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "(?i)(qty|volume|value|reorder|cover|days|stock)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
@@ -749,7 +850,24 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "(?i)(qty|volume|value|reorder|cover|days|stock)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 11,
@@ -793,16 +911,18 @@
       "fieldConfig": {
         "defaults": {
           "mappings": [],
+          "unit": "percentunit",
+          "decimals": 1,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "red",
                 "value": null
               },
               {
-                "color": "red",
-                "value": 80
+                "color": "green",
+                "value": 0.95
               }
             ]
           }
@@ -867,16 +987,16 @@
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
+            "fillOpacity": 22,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
@@ -891,6 +1011,8 @@
               "mode": "off"
             }
           },
+          "unit": "short",
+          "decimals": 2,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
