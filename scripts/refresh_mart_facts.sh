@@ -9,7 +9,7 @@ SELECT
   event_time,
   warehouse_id,
   sku_id,
-  multiIf(qty_change > 0, 'IN', qty_change < 0, 'OUT', 'ADJUST') AS event_type,
+  if(qty_change > 0, 'inbound', if(qty_change < 0, 'outbound', 'adjustment')) AS event_type,
   qty_change,
   if(qty_change > 0, qty_change, 0) AS qty_in,
   if(qty_change < 0, abs(qty_change), 0) AS qty_out,
@@ -27,8 +27,8 @@ SELECT
   damaged_qty,
   in_transit_qty,
   available_qty,
-  inventory_value,
-  unit_cost,
+  toDecimal64(inventory_value, 2) AS inventory_value,
+  toDecimal64(unit_cost, 2) AS unit_cost,
   created_at,
   ingestion_time
 FROM inventory_raw.raw_inventory_snapshot_daily;
@@ -44,7 +44,7 @@ SELECT
   qty_ordered,
   qty_received,
   greatest(qty_ordered - qty_received, 0) AS qty_open,
-  unit_cost,
+  toDecimal64(unit_cost, 2) AS unit_cost,
   line_status,
   created_at,
   ingestion_time
@@ -59,8 +59,8 @@ SELECT
   line_no,
   sku_id,
   qty,
-  unit_price,
-  toDecimal64(qty * toFloat64(unit_price), 2) AS sales_amount,
+  toDecimal64(unit_price, 2) AS unit_price,
+  toDecimal64(qty * unit_price, 2) AS sales_amount,
   created_at,
   ingestion_time
 FROM inventory_raw.raw_sales_order_lines;

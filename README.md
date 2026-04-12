@@ -22,11 +22,13 @@ bash scripts/bootstrap_pipeline.sh
 ```
 
 This will:
+
 - bring up the full stack (`docker-compose.yml`)
 - wait for services to be ready
 - populate ClickHouse **raw** (`inventory_raw.*`)
 - populate ClickHouse **mart dims** (`inventory_mart.dim_*`)
 - populate ClickHouse **mart facts** (`inventory_mart.fact_*`)
+- verify the ClickHouse data is ready for Grafana before finishing
 - start the warehouse chat backend and UI
 - start Grafana with provisioned inventory dashboards
 - run row-count checks (`scripts/check_population.sh`)
@@ -36,7 +38,7 @@ When bootstrap finishes:
 - Chat UI: `http://localhost:3000`
 - Chat server docs: `http://localhost:8001/docs`
 - MCP endpoint: `http://localhost:8001/clickhouse/mcp`
-- Grafana: `http://localhost:3002` (`admin` / `admin` by default)
+- Grafana: `http://localhost:3002` (`admin` / `admin123` by default)
 
 ## Manual run
 
@@ -64,49 +66,97 @@ docker compose -f docker-compose.yml up -d --build
 docker compose -f docker-compose.yml --profile live-gen up -d --build
 ```
 
-### 4) Refresh mart dimensions (for Power BI / Grafana)
+### 4) Mart sync job modes (manual / auto schedule)
 
-```bash
-bash scripts/refresh_mart_dims.sh
-```
+#### Manual (one-off refresh)
 
-### 5) Refresh mart facts
+Use when you want to sync mart on demand:
 
 ```bash
 bash scripts/refresh_mart_facts.sh
 ```
 
-### 6) Verify population (SQL Server + ClickHouse raw/mart)
+#### Auto schedule (every 30s)
+
+Use when you want dashboards to update continuously:
+
+```bash
+docker compose -f docker-compose.yml --profile mart-sync up -d mart-refresher
+```
+
+This runs `mart-refresher` independently and syncs `inventory_mart.fact_*` every 30 seconds.
+
+To stop only the auto-sync job:
+
+```bash
+docker compose -f docker-compose.yml --profile mart-sync stop mart-refresher
+docker compose -f docker-compose.yml --profile mart-sync rm -f mart-refresher
+```
+
+To change the schedule interval, set the env var before running:
+
+```bash
+MART_REFRESH_INTERVAL_SECONDS=60 docker compose -f docker-compose.yml --profile mart-sync up -d mart-refresher
+```
+
+If you want the full realtime demo, run both profiles:
+
+```bash
+docker compose -f docker-compose.yml --profile live-gen --profile mart-sync up -d --build
+```
+
+### 5) Refresh mart dimensions (for Grafana/BI reports)
+
+```bash
+bash scripts/refresh_mart_dims.sh
+```
+
+### 6) Refresh mart facts
+
+```bash
+bash scripts/refresh_mart_facts.sh
+```
+
+### 7) Verify population (SQL Server + ClickHouse raw/mart)
 
 ```bash
 bash scripts/check_population.sh
 ```
 
-### 7) Open the warehouse chat app and Grafana
+### 8) Open the warehouse chat app
+
+If neither Azure OpenAI nor the OpenAI-compatible fallback is configured, the chat server still runs in fallback mode with warehouse-specific canned reasoning on top of ClickHouse queries.
 
 - UI: `http://localhost:3000`
 - Backend docs: `http://localhost:8001/docs`
 - Grafana: `http://localhost:3002`
 
-If neither Azure OpenAI nor the OpenAI-compatible fallback is configured, the chat server still runs in fallback mode with warehouse-specific canned reasoning on top of ClickHouse queries.
+### 9) Open Grafana Dashboards
 
-### 8) Check status and logs
+Grafana provisions dashboards automatically from `/etc/grafana/dashboards` (folder `Warehouse Inventory`).
+
+### 10) Check status and logs
 
 ```bash
 docker compose -f docker-compose.yml ps
 docker compose -f docker-compose.yml logs -f
+docker compose -f docker-compose.yml logs -f sqlserver-live-generator logstash --tail=200
 ```
 
-### 9) Stop
+`sqlserver-live-generator` logs are available only when profile `live-gen` is enabled.
+
+### 11a) Stop
 
 ```bash
-docker compose -f docker-compose.yml down
+docker compose -f docker-compose.yml --profile live-gen --profile mart-sync down --remove-orphans
 ```
 
-### 10) Stop and remove volumes (reset everything)
+This avoids common `Resource is still in use` errors when profile containers (for example `sqlserver_live_generator` or `mart_refresher`) are still attached to the Compose network.
+
+### 11b) Stop and remove volumes (reset everything)
 
 ```bash
-docker compose -f docker-compose.yml down -v
+docker compose -f docker-compose.yml --profile live-gen --profile mart-sync down -v --remove-orphans
 ```
 
 ## Where to query in ClickHouse
@@ -161,7 +211,7 @@ Grafana is provisioned automatically at `http://localhost:3002` with the ClickHo
 - `Inventory Movement & Replenishment`: inbound/outbound movement, receiving vs dispatch by warehouse, top moving SKUs, slow-moving SKUs, open PO metrics, replenishment recommendations.
 - `Inventory Aging & Warehouse Performance`: aging buckets, dead/slow-moving value, inventory accuracy, count variance trend, warehouse-level performance tables.
 
-These dashboards are aligned to the main use cases in [guideline.md](/Users/huynhthanhdat/Workspace/source-ingestion-demo/guideline.md:13): executive overview, stock monitoring, movement analysis, replenishment planning, and warehouse performance.
+These dashboards are aligned to the main use cases in [`guideline.md`](guideline.md): executive overview, stock monitoring, movement analysis, replenishment planning, and warehouse performance.
 
 Current data-model limits:
 

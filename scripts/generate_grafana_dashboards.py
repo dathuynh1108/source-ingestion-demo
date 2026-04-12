@@ -38,7 +38,7 @@ def base_dashboard(uid: str, title: str, tags: list[str]) -> dict:
         "style": "dark",
         "tags": tags,
         "templating": {"list": []},
-        "time": {"from": "now-90d", "to": "now"},
+        "time": {"from": "now-45d", "to": "now"},
         "timepicker": {},
         "timezone": "browser",
         "title": title,
