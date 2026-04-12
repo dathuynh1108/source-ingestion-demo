@@ -6,6 +6,6 @@ providers:
     folder: Warehouse Inventory
     type: file
     disableDeletion: false
-    editable: true
+    allowUiUpdates: true
     options:
       path: /etc/grafana/dashboards

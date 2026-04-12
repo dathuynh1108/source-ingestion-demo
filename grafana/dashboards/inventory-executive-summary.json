@@ -758,7 +758,7 @@
       }
     }
   ],
-  "refresh": "10m",
+  "refresh": "30s",
   "schemaVersion": 39,
   "style": "dark",
   "tags": ["inventory", "executive", "guideline-summary"],

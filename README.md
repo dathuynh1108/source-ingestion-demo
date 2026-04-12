@@ -28,6 +28,7 @@ This will:
 - populate ClickHouse **raw** (`inventory_raw.*`)
 - populate ClickHouse **mart dims** (`inventory_mart.dim_*`)
 - populate ClickHouse **mart facts** (`inventory_mart.fact_*`)
+- verify the ClickHouse data is ready for Grafana before finishing
 - start the warehouse chat backend and UI
 - start Grafana with provisioned inventory dashboards
 - run row-count checks (`scripts/check_population.sh`)
@@ -37,7 +38,7 @@ When bootstrap finishes:
 - Chat UI: `http://localhost:3000`
 - Chat server docs: `http://localhost:8001/docs`
 - MCP endpoint: `http://localhost:8001/clickhouse/mcp`
-- Grafana: `http://localhost:3002` (`admin` / `admin` by default)
+- Grafana: `http://localhost:3002` (`admin` / `admin123` by default)
 
 ## Manual run
 
@@ -110,19 +111,19 @@ docker compose -f docker-compose.yml --profile live-gen --profile mart-sync up -
 bash scripts/refresh_mart_dims.sh
 ```
 
-### 5) Refresh mart facts
+### 6) Refresh mart facts
 
 ```bash
 bash scripts/refresh_mart_facts.sh
 ```
 
-### 6) Verify population (SQL Server + ClickHouse raw/mart)
+### 7) Verify population (SQL Server + ClickHouse raw/mart)
 
 ```bash
 bash scripts/check_population.sh
 ```
 
-### 7) Open the warehouse chat app
+### 8) Open the warehouse chat app
 
 If neither Azure OpenAI nor the OpenAI-compatible fallback is configured, the chat server still runs in fallback mode with warehouse-specific canned reasoning on top of ClickHouse queries.
 
@@ -130,11 +131,11 @@ If neither Azure OpenAI nor the OpenAI-compatible fallback is configured, the ch
 - Backend docs: `http://localhost:8001/docs`
 - Grafana: `http://localhost:3002`
 
-### 8) Open Grafana Dashboards
+### 9) Open Grafana Dashboards
 
-Grafana provisions dashboards automatically from `grafana/dashboards/inventory/` (folder `Inventory`).
+Grafana provisions dashboards automatically from `/etc/grafana/dashboards` (folder `Warehouse Inventory`).
 
-### 9) Check status and logs
+### 10) Check status and logs
 
 ```bash
 docker compose -f docker-compose.yml ps
@@ -144,16 +145,18 @@ docker compose -f docker-compose.yml logs -f sqlserver-live-generator logstash -
 
 `sqlserver-live-generator` logs are available only when profile `live-gen` is enabled.
 
-### 10a) Stop
+### 11a) Stop
 
 ```bash
-docker compose -f docker-compose.yml down
+docker compose -f docker-compose.yml --profile live-gen --profile mart-sync down --remove-orphans
 ```
 
-### 10b) Stop and remove volumes (reset everything)
+This avoids common `Resource is still in use` errors when profile containers (for example `sqlserver_live_generator` or `mart_refresher`) are still attached to the Compose network.
+
+### 11b) Stop and remove volumes (reset everything)
 
 ```bash
-docker compose -f docker-compose.yml down -v
+docker compose -f docker-compose.yml --profile live-gen --profile mart-sync down -v --remove-orphans
 ```
 
 ## Where to query in ClickHouse
@@ -208,7 +211,7 @@ Grafana is provisioned automatically at `http://localhost:3002` with the ClickHo
 - `Inventory Movement & Replenishment`: inbound/outbound movement, receiving vs dispatch by warehouse, top moving SKUs, slow-moving SKUs, open PO metrics, replenishment recommendations.
 - `Inventory Aging & Warehouse Performance`: aging buckets, dead/slow-moving value, inventory accuracy, count variance trend, warehouse-level performance tables.
 
-These dashboards are aligned to the main use cases in [guideline.md](/Users/huynhthanhdat/Workspace/source-ingestion-demo/guideline.md:13): executive overview, stock monitoring, movement analysis, replenishment planning, and warehouse performance.
+These dashboards are aligned to the main use cases in [`guideline.md`](guideline.md): executive overview, stock monitoring, movement analysis, replenishment planning, and warehouse performance.
 
 Current data-model limits:
 

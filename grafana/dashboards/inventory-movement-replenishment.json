@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 8,
+  "id": null,
   "links": [],
   "panels": [
     {
@@ -1069,7 +1069,7 @@
     }
   ],
   "preload": false,
-  "refresh": "10m",
+  "refresh": "30s",
   "schemaVersion": 40,
   "tags": ["inventory", "movement", "replenishment"],
   "templating": {

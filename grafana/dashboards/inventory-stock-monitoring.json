@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 9,
+  "id": null,
   "links": [],
   "panels": [
     {
@@ -236,7 +236,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\n,\n    stock_status AS (\n      SELECT\n        s.warehouse_id,\n        s.sku_id,\n        coalesce(w.warehouse_name, s.warehouse_id) AS warehouse,\n        coalesce(p.sku_name, s.sku_id) AS sku_name,\n        coalesce(p.category, 'Unknown') AS category,\n        coalesce(p.brand, 'Unknown') AS brand,\n        s.on_hand_qty,\n        s.available_qty,\n        s.reserved_qty,\n        p.reorder_point,\n        p.max_stock,\n        round(s.inventory_value, 2) AS inventory_value,\n        multiIf(\n          s.available_qty <= 0, 'Stockout',\n          p.reorder_point > 0 AND s.available_qty < p.reorder_point, 'Low stock',\n          p.max_stock > 0 AND s.available_qty > p.max_stock, 'Overstock',\n          'Healthy'\n        ) AS stock_status\n      FROM inventory_mart.fact_inventory_snapshot_daily s\n      LEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\n      LEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = s.warehouse_id\n      WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n        AND ('${warehouse:raw}'='__all' OR s.warehouse_id IN (${warehouse:singlequote}))\n        AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n        AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n        AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n        AND ('${sku:raw}'='__all' OR s.sku_id IN (${sku:singlequote}))\n    )\n\n            SELECT warehouse, count() AS low_stock_items\n            FROM stock_status\n            WHERE ('${stock_status:raw}'='__all' OR stock_status IN (${stock_status:singlequote}))\n              AND stock_status = 'Low stock'\n            GROUP BY warehouse\n            ORDER BY low_stock_items DESC",
+          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\nSELECT\n  coalesce(w.warehouse_name, w.warehouse_id) AS warehouse,\n  countIf(\n    ('${stock_status:raw}'='__all' OR 'Low stock' IN (${stock_status:singlequote}))\n    AND p.reorder_point > 0\n    AND s.available_qty < p.reorder_point\n  ) AS low_stock_items\nFROM inventory_mart.dim_warehouse w\nLEFT JOIN inventory_mart.fact_inventory_snapshot_daily s\n  ON s.warehouse_id = w.warehouse_id\n  AND s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\nLEFT JOIN inventory_mart.dim_product p\n  ON p.sku_id = s.sku_id\nWHERE ('${warehouse:raw}'='__all' OR w.warehouse_id IN (${warehouse:singlequote}))\n  AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n  AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n  AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n  AND ('${sku:raw}'='__all' OR s.sku_id IN (${sku:singlequote}))\nGROUP BY warehouse\nORDER BY low_stock_items DESC, warehouse",
           "refId": "A"
         }
       ],
@@ -638,7 +638,7 @@
     }
   ],
   "preload": false,
-  "refresh": "10m",
+  "refresh": "30s",
   "schemaVersion": 40,
   "tags": ["inventory", "operations", "stock-health"],
   "templating": {

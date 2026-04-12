@@ -1,7 +1,11 @@
-TRUNCATE TABLE inventory_mart.fact_inventory_movement;
+DROP TABLE IF EXISTS inventory_mart.fact_inventory_movement__staging;
+
+CREATE TABLE inventory_mart.fact_inventory_movement__staging AS inventory_mart.fact_inventory_movement;
+
+DROP TABLE IF EXISTS inventory_mart.fact_inventory_movement__old;
 
 INSERT INTO
-    inventory_mart.fact_inventory_movement
+    inventory_mart.fact_inventory_movement__staging
 SELECT
     toDate (event_time) AS event_date,
     event_time,
@@ -25,6 +29,11 @@ SELECT
     ) AS qty_out,
     ingestion_time
 FROM inventory_raw.raw_inventory_transactions;
+
+RENAME TABLE inventory_mart.fact_inventory_movement TO inventory_mart.fact_inventory_movement__old,
+inventory_mart.fact_inventory_movement__staging TO inventory_mart.fact_inventory_movement;
+
+DROP TABLE inventory_mart.fact_inventory_movement__old;
 
 TRUNCATE TABLE inventory_mart.fact_inventory_snapshot_daily;
 

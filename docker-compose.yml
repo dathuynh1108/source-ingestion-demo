@@ -181,7 +181,7 @@ services:
     command:
       - /bin/sh
       - -c
-      - "while true; do clickhouse-client --host clickhouse_db --user password --password admin --multiquery --queries-file /scripts/refresh_mart_facts.sql; sleep $${MART_REFRESH_INTERVAL_SECONDS}; done"
+      - "while true; do clickhouse-client --host clickhouse_db --user password --password admin --multiquery --queries-file /scripts/refresh_mart_facts.sql || exit 1; sleep $${MART_REFRESH_INTERVAL_SECONDS}; done"
     volumes:
       - ./scripts/refresh_mart_facts.sql:/scripts/refresh_mart_facts.sql:ro
     restart: unless-stopped
