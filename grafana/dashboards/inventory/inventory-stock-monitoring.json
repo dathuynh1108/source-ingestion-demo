@@ -1,0 +1,349 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Stock Status Distribution",
+      "type": "barchart",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\n,\n    stock_status AS (\n      SELECT\n        s.warehouse_id,\n        s.sku_id,\n        coalesce(w.warehouse_name, s.warehouse_id) AS warehouse,\n        coalesce(p.sku_name, s.sku_id) AS sku_name,\n        coalesce(p.category, 'Unknown') AS category,\n        coalesce(p.brand, 'Unknown') AS brand,\n        s.on_hand_qty,\n        s.available_qty,\n        s.reserved_qty,\n        p.reorder_point,\n        p.max_stock,\n        round(s.inventory_value, 2) AS inventory_value,\n        multiIf(\n          s.available_qty <= 0, 'Stockout',\n          p.reorder_point > 0 AND s.available_qty < p.reorder_point, 'Low stock',\n          p.max_stock > 0 AND s.available_qty > p.max_stock, 'Overstock',\n          'Healthy'\n        ) AS stock_status\n      FROM inventory_mart.fact_inventory_snapshot_daily s\n      LEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\n      LEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = s.warehouse_id\n      WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n    )\n\n            SELECT stock_status, count() AS sku_count\n            FROM stock_status\n            GROUP BY stock_status\n            ORDER BY sku_count DESC",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      }
+    },
+    {
+      "id": 2,
+      "title": "Low-stock Items by Warehouse",
+      "type": "barchart",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\n,\n    stock_status AS (\n      SELECT\n        s.warehouse_id,\n        s.sku_id,\n        coalesce(w.warehouse_name, s.warehouse_id) AS warehouse,\n        coalesce(p.sku_name, s.sku_id) AS sku_name,\n        coalesce(p.category, 'Unknown') AS category,\n        coalesce(p.brand, 'Unknown') AS brand,\n        s.on_hand_qty,\n        s.available_qty,\n        s.reserved_qty,\n        p.reorder_point,\n        p.max_stock,\n        round(s.inventory_value, 2) AS inventory_value,\n        multiIf(\n          s.available_qty <= 0, 'Stockout',\n          p.reorder_point > 0 AND s.available_qty < p.reorder_point, 'Low stock',\n          p.max_stock > 0 AND s.available_qty > p.max_stock, 'Overstock',\n          'Healthy'\n        ) AS stock_status\n      FROM inventory_mart.fact_inventory_snapshot_daily s\n      LEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\n      LEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = s.warehouse_id\n      WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n    )\n\n            SELECT warehouse, count() AS low_stock_items\n            FROM stock_status\n            WHERE stock_status = 'Low stock'\n            GROUP BY warehouse\n            ORDER BY low_stock_items DESC",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      }
+    },
+    {
+      "id": 3,
+      "title": "Items Below Reorder Point",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\n,\n    stock_status AS (\n      SELECT\n        s.warehouse_id,\n        s.sku_id,\n        coalesce(w.warehouse_name, s.warehouse_id) AS warehouse,\n        coalesce(p.sku_name, s.sku_id) AS sku_name,\n        coalesce(p.category, 'Unknown') AS category,\n        coalesce(p.brand, 'Unknown') AS brand,\n        s.on_hand_qty,\n        s.available_qty,\n        s.reserved_qty,\n        p.reorder_point,\n        p.max_stock,\n        round(s.inventory_value, 2) AS inventory_value,\n        multiIf(\n          s.available_qty <= 0, 'Stockout',\n          p.reorder_point > 0 AND s.available_qty < p.reorder_point, 'Low stock',\n          p.max_stock > 0 AND s.available_qty > p.max_stock, 'Overstock',\n          'Healthy'\n        ) AS stock_status\n      FROM inventory_mart.fact_inventory_snapshot_daily s\n      LEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\n      LEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = s.warehouse_id\n      WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n    )\n\n            SELECT count() AS value\n            FROM stock_status\n            WHERE stock_status = 'Low stock'",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      }
+    },
+    {
+      "id": 4,
+      "title": "Negative Available Stock",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\n,\n    stock_status AS (\n      SELECT\n        s.warehouse_id,\n        s.sku_id,\n        coalesce(w.warehouse_name, s.warehouse_id) AS warehouse,\n        coalesce(p.sku_name, s.sku_id) AS sku_name,\n        coalesce(p.category, 'Unknown') AS category,\n        coalesce(p.brand, 'Unknown') AS brand,\n        s.on_hand_qty,\n        s.available_qty,\n        s.reserved_qty,\n        p.reorder_point,\n        p.max_stock,\n        round(s.inventory_value, 2) AS inventory_value,\n        multiIf(\n          s.available_qty <= 0, 'Stockout',\n          p.reorder_point > 0 AND s.available_qty < p.reorder_point, 'Low stock',\n          p.max_stock > 0 AND s.available_qty > p.max_stock, 'Overstock',\n          'Healthy'\n        ) AS stock_status\n      FROM inventory_mart.fact_inventory_snapshot_daily s\n      LEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\n      LEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = s.warehouse_id\n      WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n    )\n\n            SELECT countIf(available_qty < 0) AS value\n            FROM stock_status",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      }
+    },
+    {
+      "id": 5,
+      "title": "Current Stock Exception Matrix",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\n,\n    stock_status AS (\n      SELECT\n        s.warehouse_id,\n        s.sku_id,\n        coalesce(w.warehouse_name, s.warehouse_id) AS warehouse,\n        coalesce(p.sku_name, s.sku_id) AS sku_name,\n        coalesce(p.category, 'Unknown') AS category,\n        coalesce(p.brand, 'Unknown') AS brand,\n        s.on_hand_qty,\n        s.available_qty,\n        s.reserved_qty,\n        p.reorder_point,\n        p.max_stock,\n        round(s.inventory_value, 2) AS inventory_value,\n        multiIf(\n          s.available_qty <= 0, 'Stockout',\n          p.reorder_point > 0 AND s.available_qty < p.reorder_point, 'Low stock',\n          p.max_stock > 0 AND s.available_qty > p.max_stock, 'Overstock',\n          'Healthy'\n        ) AS stock_status\n      FROM inventory_mart.fact_inventory_snapshot_daily s\n      LEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\n      LEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = s.warehouse_id\n      WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n    )\n\n            SELECT\n              warehouse,\n              sku_id,\n              sku_name,\n              category,\n              brand,\n              on_hand_qty,\n              available_qty,\n              reserved_qty,\n              reorder_point,\n              max_stock,\n              stock_status,\n              inventory_value\n            FROM stock_status\n            WHERE stock_status != 'Healthy'\n            ORDER BY\n              multiIf(stock_status = 'Stockout', 0, stock_status = 'Low stock', 1, stock_status = 'Overstock', 2, 3),\n              inventory_value DESC\n            LIMIT 200",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      }
+    },
+    {
+      "id": 6,
+      "title": "Zero Stock with Recent Demand (30 days)",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 17
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\n,\n    stock_status AS (\n      SELECT\n        s.warehouse_id,\n        s.sku_id,\n        coalesce(w.warehouse_name, s.warehouse_id) AS warehouse,\n        coalesce(p.sku_name, s.sku_id) AS sku_name,\n        coalesce(p.category, 'Unknown') AS category,\n        coalesce(p.brand, 'Unknown') AS brand,\n        s.on_hand_qty,\n        s.available_qty,\n        s.reserved_qty,\n        p.reorder_point,\n        p.max_stock,\n        round(s.inventory_value, 2) AS inventory_value,\n        multiIf(\n          s.available_qty <= 0, 'Stockout',\n          p.reorder_point > 0 AND s.available_qty < p.reorder_point, 'Low stock',\n          p.max_stock > 0 AND s.available_qty > p.max_stock, 'Overstock',\n          'Healthy'\n        ) AS stock_status\n      FROM inventory_mart.fact_inventory_snapshot_daily s\n      LEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\n      LEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = s.warehouse_id\n      WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n    )\n    ,\n            recent_demand AS (\n              SELECT\n                sku_id,\n                sum(qty) AS sold_qty_30d\n              FROM inventory_mart.fact_sales_order_lines\n              WHERE created_date >= today() - 30\n              GROUP BY sku_id\n            )\n            SELECT\n              s.warehouse,\n              s.sku_id,\n              s.sku_name,\n              s.category,\n              s.available_qty,\n              d.sold_qty_30d\n            FROM stock_status s\n            INNER JOIN recent_demand d ON d.sku_id = s.sku_id\n            WHERE s.available_qty <= 0\n            ORDER BY d.sold_qty_30d DESC\n            LIMIT 30",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      }
+    },
+    {
+      "id": 7,
+      "title": "Largest Overstock Positions",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 17
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\n,\n    stock_status AS (\n      SELECT\n        s.warehouse_id,\n        s.sku_id,\n        coalesce(w.warehouse_name, s.warehouse_id) AS warehouse,\n        coalesce(p.sku_name, s.sku_id) AS sku_name,\n        coalesce(p.category, 'Unknown') AS category,\n        coalesce(p.brand, 'Unknown') AS brand,\n        s.on_hand_qty,\n        s.available_qty,\n        s.reserved_qty,\n        p.reorder_point,\n        p.max_stock,\n        round(s.inventory_value, 2) AS inventory_value,\n        multiIf(\n          s.available_qty <= 0, 'Stockout',\n          p.reorder_point > 0 AND s.available_qty < p.reorder_point, 'Low stock',\n          p.max_stock > 0 AND s.available_qty > p.max_stock, 'Overstock',\n          'Healthy'\n        ) AS stock_status\n      FROM inventory_mart.fact_inventory_snapshot_daily s\n      LEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\n      LEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = s.warehouse_id\n      WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n    )\n\n            SELECT\n              warehouse,\n              sku_id,\n              sku_name,\n              category,\n              available_qty,\n              max_stock,\n              greatest(available_qty - max_stock, 0) AS excess_qty,\n              inventory_value\n            FROM stock_status\n            WHERE stock_status = 'Overstock'\n            ORDER BY excess_qty DESC, inventory_value DESC\n            LIMIT 30",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      }
+    }
+  ],
+  "refresh": "10m",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": [
+    "inventory",
+    "operations",
+    "stock-health"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-90d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Inventory Stock Monitoring",
+  "uid": "inventory-stock-monitoring",
+  "version": 1,
+  "weekStart": ""
+}

@@ -40,6 +40,7 @@ wait_for() {
 }
 
 require_cmd docker
+require_cmd curl
 
 if ! command -v "docker" >/dev/null 2>&1; then
   log "Docker is not installed."
@@ -109,6 +110,10 @@ wait_for "inventory_chatui healthy" \
   "docker inspect -f '{{.State.Health.Status}}' inventory_chatui 2>/dev/null | grep -q '^healthy$'" \
   240
 
+wait_for "inventory_grafana ready" \
+  "curl -fsS http://localhost:3002/api/health | grep -q '\"database\":\"ok\"'" \
+  300
+
 log ""
 log "Refreshing mart dimensions..."
 bash "${ROOT_DIR}/scripts/refresh_mart_dims.sh"
@@ -125,3 +130,4 @@ log ""
 log "Done."
 log "Chat UI: http://localhost:3000"
 log "Chat server docs: http://localhost:8001/docs"
+log "Grafana: http://localhost:3002 (admin/admin by default)"

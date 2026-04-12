@@ -79,6 +79,7 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
+    restart: unless-stopped
     networks:
       - data_network
 
@@ -311,6 +312,30 @@ services:
     networks:
       - data_network
 
+  grafana:
+    build:
+      context: .
+      dockerfile: docker/grafana/Dockerfile
+    container_name: inventory_grafana
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_PATHS_PLUGINS: /opt/grafana-plugins
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/dashboards/inventory/inventory-executive-summary.json
+    ports:
+      - "3002:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/dashboards
+    restart: unless-stopped
+    networks:
+      - data_network
+
 volumes:
   kafka_data:
   clickhouse_data:
@@ -318,6 +343,7 @@ volumes:
   logstash_state:
   grafana_data:
   chatserver_data:
+  grafana_data:
 
 networks:
   data_network:
