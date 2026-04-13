@@ -31,6 +31,8 @@ const STARTER_PROMPTS = [
   "Inventory movement for WH01 in the last 7 days",
   "Open purchase orders that still need replenishment",
 ] as const;
+const STREAM_TAIL_GUARD_MS = 2500;
+const ASSISTANT_TAIL_DEDUPE_WINDOW_MS = 4000;
 
 type ConnectionStatus = "connecting" | "connected" | "disconnected";
 type ChatRole = "user" | "assistant" | "system" | "error";
@@ -139,6 +141,13 @@ function getClientSessionId(): string {
   return next;
 }
 
+function setStoredClientSessionId(next: string): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  window.localStorage.setItem(CLIENT_SESSION_STORAGE_KEY, next);
+}
+
 function newChat(
   role: ChatRole,
   text: string,
@@ -207,6 +216,57 @@ function trimSnippet(value: string): string {
     return compact || "New chat";
   }
   return `${compact.slice(0, 87)}...`;
+}
+
+function isLikelyAssistantTailDuplicate(previous: ChatItem, candidate: ChatItem): boolean {
+  if (previous.role !== "assistant" || candidate.role !== "assistant") {
+    return false;
+  }
+
+  if (candidate.streaming || candidate.links?.length) {
+    return false;
+  }
+
+  const previousText = previous.text.replace(/\s+/g, " ").trim();
+  const candidateText = candidate.text.replace(/\s+/g, " ").trim();
+
+  if (!previousText || !candidateText) {
+    return false;
+  }
+
+  if (previousText.length <= candidateText.length + 8 || candidateText.length < 8) {
+    return false;
+  }
+
+  if (!previousText.endsWith(candidateText)) {
+    return false;
+  }
+
+  const previousTime = Date.parse(previous.createdAt);
+  const candidateTime = Date.parse(candidate.createdAt);
+  if (
+    Number.isFinite(previousTime) &&
+    Number.isFinite(candidateTime) &&
+    candidateTime - previousTime > ASSISTANT_TAIL_DEDUPE_WINDOW_MS
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function pruneAssistantTailDuplicates(messages: ChatItem[]): ChatItem[] {
+  const next: ChatItem[] = [];
+
+  for (const item of messages) {
+    const previous = next[next.length - 1];
+    if (previous && isLikelyAssistantTailDuplicate(previous, item)) {
+      continue;
+    }
+    next.push(item);
+  }
+
+  return next;
 }
 
 function MessageBubble({ item }: { item: ChatItem }) {
@@ -281,6 +341,9 @@ function MessageBubble({ item }: { item: ChatItem }) {
 }
 
 export default function Home() {
+  const [clientSessionId, setClientSessionId] = useState<string>(() =>
+    getClientSessionId(),
+  );
   const [messages, setMessages] = useState<ChatItem[]>([]);
   const [composer, setComposer] = useState("");
   const [connectionStatus, setConnectionStatus] =
@@ -296,6 +359,8 @@ export default function Home() {
   const messagesRef = useRef<HTMLDivElement | null>(null);
   const pendingAssistantIdRef = useRef<string | null>(null);
   const recentSubmissionRef = useRef<RecentSubmission | null>(null);
+  const completedStreamIdsRef = useRef<Set<string>>(new Set());
+  const lastCompletedStreamAtRef = useRef(0);
 
   const clearPendingAssistant = useCallback(() => {
     pendingAssistantIdRef.current = null;
@@ -341,6 +406,8 @@ export default function Home() {
         conversationId,
         timestamp: now,
       };
+      completedStreamIdsRef.current.clear();
+      lastCompletedStreamAtRef.current = 0;
       setMessages((current) => [...current, newChat("user", text)]);
       setComposer("");
       setIsSending(true);
@@ -410,6 +477,8 @@ export default function Home() {
       const payload = (await response.json()) as ConversationDetailResponse;
       setConversationId(payload.conversation_id);
       clearPendingAssistant();
+      completedStreamIdsRef.current.clear();
+      lastCompletedStreamAtRef.current = 0;
       setMessages(
         payload.history.map((item) =>
           newChat(roleFromSender(item.sender), item.message, {
@@ -435,6 +504,8 @@ export default function Home() {
         const pendingId = pendingAssistantIdRef.current;
         setIsSending(false);
         clearPendingAssistant();
+        completedStreamIdsRef.current.clear();
+        lastCompletedStreamAtRef.current = 0;
         setMessages((current) => {
           const next = pendingId
             ? current.filter((item) => item.id !== pendingId)
@@ -447,9 +518,23 @@ export default function Home() {
 
       if (payload.event === "chunk" && payload.data?.msg_id) {
         const chunkData = payload.data;
+        const streamingId = chunkData.msg_id;
+        if (
+          !streamingId ||
+          !chunkData.chunk ||
+          completedStreamIdsRef.current.has(streamingId)
+        ) {
+          return;
+        }
+        if (
+          !pendingAssistantIdRef.current &&
+          lastCompletedStreamAtRef.current > 0 &&
+          Date.now() - lastCompletedStreamAtRef.current < STREAM_TAIL_GUARD_MS
+        ) {
+          return;
+        }
         setMessages((current) => {
           const next = [...current];
-          const streamingId = chunkData.msg_id!;
           const index = next.findIndex((item) => item.id === streamingId);
           const pendingId = pendingAssistantIdRef.current;
           const pendingIndex = pendingId
@@ -486,14 +571,29 @@ export default function Home() {
 
       if (payload.event === "message" && payload.data?.msg_id) {
         const messageData = payload.data;
+        const resolvedId = messageData.msg_id;
+        const pendingId = pendingAssistantIdRef.current;
+        if (!resolvedId) {
+          return;
+        }
+        lastCompletedStreamAtRef.current = Date.now();
+        completedStreamIdsRef.current.add(resolvedId);
+        if (pendingId) {
+          completedStreamIdsRef.current.add(pendingId);
+        }
         setMessages((current) => {
           const next = [...current];
-          const resolvedId = messageData.msg_id!;
           const index = next.findIndex((item) => item.id === resolvedId);
-          const pendingId = pendingAssistantIdRef.current;
           const pendingIndex = pendingId
             ? next.findIndex((item) => item.id === pendingId)
             : -1;
+          let fallbackIndex = -1;
+          for (let i = next.length - 1; i >= 0; i -= 1) {
+            if (next[i].role === "assistant" && next[i].streaming) {
+              fallbackIndex = i;
+              break;
+            }
+          }
           const complete = newChat(
             roleFromSender(messageData.sender ?? "assistant"),
             messageData.message ?? "",
@@ -504,16 +604,26 @@ export default function Home() {
               links: messageData.links ?? undefined,
             },
           );
-          if (index === -1) {
-            if (pendingIndex !== -1) {
-              next[pendingIndex] = complete;
-            } else {
-              next.push(complete);
+          const replaceIndex =
+            index !== -1 ? index : pendingIndex !== -1 ? pendingIndex : fallbackIndex;
+          if (replaceIndex === -1) {
+            if (!complete.text && !complete.links?.length) {
+              return current;
             }
+            if (
+              current.some(
+                (item) =>
+                  item.id === complete.id ||
+                  (item.role === "assistant" && item.text === complete.text),
+              )
+            ) {
+              return current;
+            }
+            next.push(complete);
           } else {
-            next[index] = complete;
+            next[replaceIndex] = complete;
           }
-          return next;
+          return pruneAssistantTailDuplicates(next);
         });
         setIsSending(false);
         clearPendingAssistant();
@@ -533,6 +643,8 @@ export default function Home() {
         const pendingId = pendingAssistantIdRef.current;
         setIsSending(false);
         clearPendingAssistant();
+        completedStreamIdsRef.current.clear();
+        lastCompletedStreamAtRef.current = 0;
         setMessages((current) => {
           const next = pendingId
             ? current.filter((item) => item.id !== pendingId)
@@ -551,7 +663,7 @@ export default function Home() {
       transports: ["websocket"],
       auth: {
         namespace: CHAT_NAMESPACE,
-        client_session_id: getClientSessionId(),
+        client_session_id: clientSessionId,
       },
     });
 
@@ -586,7 +698,13 @@ export default function Home() {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [fetchConversations, fetchDashboard, handleServerMessage, loadConversation]);
+  }, [
+    clientSessionId,
+    fetchConversations,
+    fetchDashboard,
+    handleServerMessage,
+    loadConversation,
+  ]);
 
   useEffect(() => {
     if (!messagesRef.current) {
@@ -630,10 +748,17 @@ export default function Home() {
   };
 
   const handleNewConversation = () => {
+    const nextClientSessionId = createId();
+    setStoredClientSessionId(nextClientSessionId);
+    recentSubmissionRef.current = null;
+    completedStreamIdsRef.current.clear();
+    lastCompletedStreamAtRef.current = 0;
     clearPendingAssistant();
+    setIsSending(false);
     setConversationId(null);
     setMessages([]);
     setComposer("");
+    setClientSessionId(nextClientSessionId);
   };
 
   const overview = dashboard?.summary ?? {};

@@ -213,6 +213,10 @@ Grafana is provisioned automatically at `http://localhost:3002` with the ClickHo
 
 These dashboards are aligned to the main use cases in [`guideline.md`](guideline.md): executive overview, stock monitoring, movement analysis, replenishment planning, and warehouse performance.
 
+Field-by-field metric explanations are documented in [grafana/DASHBOARD_FIELD_GLOSSARY.md](/Users/huynhthanhdat/Workspace/source-ingestion-demo/grafana/DASHBOARD_FIELD_GLOSSARY.md).
+
+Business requirements aligned to the dashboards are documented in [grafana/BUSINESS_REQUIREMENTS.md](/Users/huynhthanhdat/Workspace/source-ingestion-demo/grafana/BUSINESS_REQUIREMENTS.md).
+
 Current data-model limits:
 
 - Supplier lead time is available from `dim_supplier`, but supplier-linked PO performance is not, because the current purchase-order fact does not carry `supplier_id`.

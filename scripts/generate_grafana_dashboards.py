@@ -404,7 +404,8 @@ def stock_monitoring_dashboard() -> dict:
             {status_cte}
             SELECT count() AS value
             FROM stock_status
-            WHERE stock_status = 'Low stock'
+            WHERE reorder_point > 0
+              AND available_qty < reorder_point
             """,
             16,
             0,
