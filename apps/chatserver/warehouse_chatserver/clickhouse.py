@@ -166,6 +166,10 @@ class ClickHouseService:
                 secure=self.settings.clickhouse_secure,
                 connect_timeout=self.settings.clickhouse_connect_timeout,
                 send_receive_timeout=self.settings.clickhouse_send_receive_timeout,
+                # The service reuses one HTTP client across FastAPI requests, so
+                # per-client ClickHouse sessions cause false concurrent-query
+                # failures when health checks overlap with user traffic.
+                autogenerate_session_id=False,
             )
         return self._client
 

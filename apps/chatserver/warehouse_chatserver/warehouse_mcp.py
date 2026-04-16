@@ -129,7 +129,7 @@ async def sample_table_rows(
 
 
 @mcp.tool(
-    description="Run any read-only SQL query on ClickHouse. Use this after understanding the schema or when the current wrapper tools are not enough.",
+    description="Run a read-only SQL query on ClickHouse. Only use this after verifying the exact table names and columns with list_tables and describe_table in the current conversation. Do not guess schema objects or columns.",
 )
 async def query_clickhouse(sql: str) -> dict[str, Any]:
     return await _run_sync("run_readonly_sql", sql=sql)
