@@ -1,0 +1,110 @@
+Project DE_Assignment_SourceIngestionDemo_RAW {
+  database_type: "ClickHouse"
+  note: "Final RAW schema for source-ingestion-demo (database: inventory_raw)."
+}
+
+Table inventory_raw.raw_inventory_transactions {
+  warehouse_id String [not null]
+  sku_id String [not null]
+  qty_change Int32 [not null]
+  event_time DateTime [not null]
+  ingestion_time DateTime [not null]
+
+  Note: "Grain: one inventory movement event per warehouse_id + sku_id + event_time"
+}
+
+Table inventory_raw.raw_purchase_order_lines {
+  po_line_id Int64 [pk, not null]
+  po_id Int64 [not null]
+  line_no Int32 [not null]
+  sku_id String [not null]
+  qty_ordered Int32 [not null]
+  qty_received Int32 [not null]
+  unit_cost Decimal(18,2) [not null]
+  line_status String [not null]
+  created_at DateTime [not null]
+  ingestion_time DateTime [not null]
+
+  Note: "Grain: one PO line record"
+}
+
+Table inventory_raw.raw_sales_order_lines {
+  so_line_id Int64 [pk, not null]
+  order_id Int64 [not null]
+  line_no Int32 [not null]
+  sku_id String [not null]
+  qty Int32 [not null]
+  unit_price Decimal(18,2) [not null]
+  created_at DateTime [not null]
+  ingestion_time DateTime [not null]
+
+  Note: "Grain: one sales order line record"
+}
+
+Table inventory_raw.raw_inventory_snapshot_daily {
+  snapshot_date Date [not null]
+  warehouse_id String [not null]
+  sku_id String [not null]
+  on_hand_qty Int32 [not null]
+  reserved_qty Int32 [not null]
+  damaged_qty Int32 [not null]
+  in_transit_qty Int32 [not null]
+  available_qty Int32 [not null]
+  unit_cost Decimal(18,2) [not null]
+  inventory_value Decimal(18,2) [not null]
+  created_at DateTime [not null]
+  ingestion_time DateTime [not null]
+
+  Note: "Grain: one daily snapshot per snapshot_date + warehouse_id + sku_id"
+}
+
+Table inventory_raw.raw_stock_counts {
+  count_id Int64 [pk, not null]
+  count_date Date [not null]
+  warehouse_id String [not null]
+  sku_id String [not null]
+  system_qty Int32 [not null]
+  counted_qty Int32 [not null]
+  variance_qty Int32 [not null]
+  created_at DateTime [not null]
+  ingestion_time DateTime [not null]
+
+  Note: "Grain: one physical count event"
+}
+
+Table inventory_raw.raw_dim_skus {
+  sku_id String [pk, not null]
+  sku_name String
+  category String
+  subcategory String
+  brand String
+  uom String
+  unit_cost Float64
+  selling_price Float64
+  status String
+  reorder_point Int32
+  safety_stock Int32
+  max_stock Int32
+  shelf_life_days Int32
+  abc_class String
+  created_at String
+  ingestion_time DateTime [not null]
+}
+
+Table inventory_raw.raw_dim_warehouses {
+  warehouse_id String [pk, not null]
+  warehouse_name String
+  city String
+  region String
+  created_at String
+  ingestion_time DateTime [not null]
+}
+
+Ref: inventory_raw.raw_inventory_transactions.warehouse_id > inventory_raw.raw_dim_warehouses.warehouse_id
+Ref: inventory_raw.raw_inventory_transactions.sku_id > inventory_raw.raw_dim_skus.sku_id
+Ref: inventory_raw.raw_inventory_snapshot_daily.warehouse_id > inventory_raw.raw_dim_warehouses.warehouse_id
+Ref: inventory_raw.raw_inventory_snapshot_daily.sku_id > inventory_raw.raw_dim_skus.sku_id
+Ref: inventory_raw.raw_stock_counts.warehouse_id > inventory_raw.raw_dim_warehouses.warehouse_id
+Ref: inventory_raw.raw_stock_counts.sku_id > inventory_raw.raw_dim_skus.sku_id
+Ref: inventory_raw.raw_purchase_order_lines.sku_id > inventory_raw.raw_dim_skus.sku_id
+Ref: inventory_raw.raw_sales_order_lines.sku_id > inventory_raw.raw_dim_skus.sku_id
