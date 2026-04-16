@@ -1,0 +1,137 @@
+Project DE_Assignment_SourceIngestionDemo_MART {
+  database_type: "ClickHouse"
+  note: "Final MART schema for source-ingestion-demo (database: inventory_mart)."
+}
+
+Table inventory_mart.dim_date {
+  date_key UInt32 [pk, note: "YYYYMMDD"]
+  full_date Date [unique, not null]
+  calendar_year UInt16 [not null]
+  calendar_quarter UInt8 [not null]
+  calendar_month UInt8 [not null]
+  month_name String [not null]
+  day_of_month UInt8 [not null]
+  day_of_week UInt8 [not null]
+  day_name String [not null]
+  is_weekend UInt8 [not null]
+}
+
+Table inventory_mart.dim_warehouse {
+  warehouse_id String [pk, not null]
+  warehouse_name String
+  city String
+  region String
+  created_at DateTime
+}
+
+Table inventory_mart.dim_product {
+  sku_id String [pk, not null]
+  sku_name String
+  category String
+  subcategory String
+  brand String
+  uom String
+  unit_cost Decimal(18,2)
+  selling_price Decimal(18,2)
+  status String
+  reorder_point Int32
+  safety_stock Int32
+  max_stock Int32
+  shelf_life_days Int32
+  abc_class String
+  created_at DateTime
+}
+
+Table inventory_mart.fact_inventory_movement {
+  event_date Date [not null]
+  event_time DateTime [not null]
+  warehouse_id String [not null]
+  sku_id String [not null]
+  event_type String [not null]
+  qty_change Int32 [not null]
+  qty_in Int32 [not null]
+  qty_out Int32 [not null]
+  ingestion_time DateTime [not null]
+
+  Note: "Grain: one inventory movement event per warehouse_id + sku_id + event_time"
+}
+
+Table inventory_mart.fact_inventory_snapshot_daily {
+  snapshot_date Date [not null]
+  warehouse_id String [not null]
+  sku_id String [not null]
+  on_hand_qty Int32 [not null]
+  reserved_qty Int32 [not null]
+  damaged_qty Int32 [not null]
+  in_transit_qty Int32 [not null]
+  available_qty Int32 [not null]
+  inventory_value Decimal(18,2) [not null]
+  unit_cost Decimal(18,2) [not null]
+  created_at DateTime [not null]
+  ingestion_time DateTime [not null]
+
+  Note: "Grain: one daily inventory position per snapshot_date + warehouse_id + sku_id"
+}
+
+Table inventory_mart.fact_purchase_order_lines {
+  created_date Date [not null]
+  po_id Int64 [not null]
+  po_line_id Int64 [pk, not null]
+  line_no Int32 [not null]
+  sku_id String [not null]
+  qty_ordered Int32 [not null]
+  qty_received Int32 [not null]
+  qty_open Int32 [not null]
+  unit_cost Decimal(18,2) [not null]
+  line_status String [not null]
+  created_at DateTime [not null]
+  ingestion_time DateTime [not null]
+
+  Note: "Grain: one purchase order line"
+}
+
+Table inventory_mart.fact_sales_order_lines {
+  created_date Date [not null]
+  order_id Int64 [not null]
+  so_line_id Int64 [pk, not null]
+  line_no Int32 [not null]
+  sku_id String [not null]
+  qty Int32 [not null]
+  unit_price Decimal(18,2) [not null]
+  sales_amount Decimal(18,2) [not null]
+  created_at DateTime [not null]
+  ingestion_time DateTime [not null]
+
+  Note: "Grain: one sales order line"
+}
+
+Table inventory_mart.fact_stock_counts {
+  count_date Date [not null]
+  warehouse_id String [not null]
+  sku_id String [not null]
+  system_qty Int32 [not null]
+  counted_qty Int32 [not null]
+  variance_qty Int32 [not null]
+  created_at DateTime [not null]
+  ingestion_time DateTime [not null]
+
+  Note: "Grain: one stock count record per count event"
+}
+
+Ref: inventory_mart.fact_inventory_movement.warehouse_id > inventory_mart.dim_warehouse.warehouse_id
+Ref: inventory_mart.fact_inventory_movement.sku_id > inventory_mart.dim_product.sku_id
+Ref: inventory_mart.fact_inventory_movement.event_date > inventory_mart.dim_date.full_date
+
+Ref: inventory_mart.fact_inventory_snapshot_daily.warehouse_id > inventory_mart.dim_warehouse.warehouse_id
+Ref: inventory_mart.fact_inventory_snapshot_daily.sku_id > inventory_mart.dim_product.sku_id
+Ref: inventory_mart.fact_inventory_snapshot_daily.snapshot_date > inventory_mart.dim_date.full_date
+
+Ref: inventory_mart.fact_purchase_order_lines.sku_id > inventory_mart.dim_product.sku_id
+Ref: inventory_mart.fact_purchase_order_lines.created_date > inventory_mart.dim_date.full_date
+
+Ref: inventory_mart.fact_sales_order_lines.sku_id > inventory_mart.dim_product.sku_id
+Ref: inventory_mart.fact_sales_order_lines.created_date > inventory_mart.dim_date.full_date
+
+Ref: inventory_mart.fact_stock_counts.warehouse_id > inventory_mart.dim_warehouse.warehouse_id
+Ref: inventory_mart.fact_stock_counts.sku_id > inventory_mart.dim_product.sku_id
+Ref: inventory_mart.fact_stock_counts.count_date > inventory_mart.dim_date.full_date
