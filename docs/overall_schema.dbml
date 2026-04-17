@@ -1,6 +1,6 @@
 Project DE_Assignment_SourceIngestionDemo_Final {
   database_type: "ClickHouse"
-  note: "Final ClickHouse data warehouse schema for source-ingestion-demo. Layered model: inventory_raw -> inventory_mart. inventory_stg exists as reserved database with no physical tables in current implementation."
+  note: "Final ClickHouse data warehouse schema for source-ingestion-demo. inventory_raw is the landing layer, inventory_stg is an optional normalization layer for inspection and future transforms, and inventory_mart remains the current BI layer."
 }
 
 // -----------------------------------------------------------------------------

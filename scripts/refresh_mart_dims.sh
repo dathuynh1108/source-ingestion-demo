@@ -55,7 +55,6 @@ SELECT
   parseDateTimeBestEffortOrNull(created_at) AS created_at
 FROM inventory_raw.raw_dim_customers;
 
--- Generate dim_date directly in ClickHouse (rolling window)
 TRUNCATE TABLE inventory_mart.dim_date;
 INSERT INTO inventory_mart.dim_date
 WITH
@@ -93,4 +92,3 @@ SELECT
   (SELECT count() FROM inventory_mart.dim_customer) AS dim_customer,
   (SELECT count() FROM inventory_mart.dim_date) AS dim_date;
 "
-

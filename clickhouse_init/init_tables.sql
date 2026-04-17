@@ -446,6 +446,159 @@ SELECT
 FROM inventory_raw.kafka_dim_customers_consumer;
 
 -- ---------------------------------------------------------------------------
+-- STAGING: normalized and latest-state tables between raw and mart
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS inventory_stg.stg_inventory_transactions_clean (
+    event_date Date,
+    event_time DateTime,
+    warehouse_id String,
+    sku_id String,
+    qty_change Int32,
+    event_type String,
+    qty_in Int32,
+    qty_out Int32,
+    ingestion_time DateTime
+)
+ENGINE = MergeTree
+PARTITION BY toYYYYMM(event_date)
+ORDER BY (event_date, warehouse_id, sku_id, event_time);
+
+CREATE TABLE IF NOT EXISTS inventory_stg.stg_inventory_snapshot_daily_clean (
+    snapshot_date Date,
+    warehouse_id String,
+    sku_id String,
+    on_hand_qty Int32,
+    reserved_qty Int32,
+    damaged_qty Int32,
+    in_transit_qty Int32,
+    available_qty Int32,
+    inventory_value Decimal(18,2),
+    unit_cost Decimal(18,2),
+    created_at DateTime,
+    ingestion_time DateTime
+)
+ENGINE = MergeTree
+PARTITION BY toYYYYMM(snapshot_date)
+ORDER BY (snapshot_date, warehouse_id, sku_id);
+
+CREATE TABLE IF NOT EXISTS inventory_stg.stg_purchase_order_lines_clean (
+    created_date Date,
+    po_id Int64,
+    po_line_id Int64,
+    line_no Int32,
+    sku_id String,
+    qty_ordered Int32,
+    qty_received Int32,
+    qty_open Int32,
+    unit_cost Decimal(18,2),
+    line_status String,
+    created_at DateTime,
+    ingestion_time DateTime
+)
+ENGINE = MergeTree
+PARTITION BY toYYYYMM(created_date)
+ORDER BY (created_date, po_id, po_line_id);
+
+CREATE TABLE IF NOT EXISTS inventory_stg.stg_sales_order_lines_clean (
+    created_date Date,
+    order_id Int64,
+    so_line_id Int64,
+    line_no Int32,
+    sku_id String,
+    qty Int32,
+    unit_price Decimal(18,2),
+    sales_amount Decimal(18,2),
+    created_at DateTime,
+    ingestion_time DateTime
+)
+ENGINE = MergeTree
+PARTITION BY toYYYYMM(created_date)
+ORDER BY (created_date, order_id, so_line_id);
+
+CREATE TABLE IF NOT EXISTS inventory_stg.stg_stock_counts_clean (
+    count_date Date,
+    warehouse_id String,
+    sku_id String,
+    system_qty Int32,
+    counted_qty Int32,
+    variance_qty Int32,
+    created_at DateTime,
+    ingestion_time DateTime
+)
+ENGINE = MergeTree
+PARTITION BY toYYYYMM(count_date)
+ORDER BY (count_date, warehouse_id, sku_id);
+
+CREATE TABLE IF NOT EXISTS inventory_stg.stg_dim_product_latest (
+    sku_id String,
+    sku_name String,
+    category String,
+    subcategory String,
+    brand String,
+    uom String,
+    unit_cost Decimal(18,2),
+    selling_price Decimal(18,2),
+    status String,
+    reorder_point Int32,
+    safety_stock Int32,
+    max_stock Int32,
+    shelf_life_days Int32,
+    abc_class String,
+    created_at DateTime
+)
+ENGINE = MergeTree
+ORDER BY (sku_id);
+
+CREATE TABLE IF NOT EXISTS inventory_stg.stg_dim_warehouse_latest (
+    warehouse_id String,
+    warehouse_name String,
+    city String,
+    region String,
+    created_at DateTime
+)
+ENGINE = MergeTree
+ORDER BY (warehouse_id);
+
+CREATE TABLE IF NOT EXISTS inventory_stg.stg_dim_supplier_latest (
+    supplier_id String,
+    supplier_name String,
+    country String,
+    lead_time_days Int32,
+    rating Decimal(4,2),
+    payment_terms_days Int32,
+    created_at DateTime
+)
+ENGINE = MergeTree
+ORDER BY (supplier_id);
+
+CREATE TABLE IF NOT EXISTS inventory_stg.stg_dim_customer_latest (
+    customer_id String,
+    customer_name String,
+    segment String,
+    city String,
+    region String,
+    created_at DateTime
+)
+ENGINE = MergeTree
+ORDER BY (customer_id);
+
+CREATE TABLE IF NOT EXISTS inventory_stg.stg_dim_date (
+    date_key UInt32,
+    full_date Date,
+    calendar_year UInt16,
+    calendar_quarter UInt8,
+    calendar_month UInt8,
+    month_name String,
+    day_of_month UInt8,
+    day_of_week UInt8,
+    day_name String,
+    is_weekend UInt8
+)
+ENGINE = MergeTree
+ORDER BY (full_date);
+
+-- ---------------------------------------------------------------------------
 -- MART: star schema tables (Power BI connects here)
 -- ---------------------------------------------------------------------------
 

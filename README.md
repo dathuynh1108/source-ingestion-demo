@@ -162,11 +162,13 @@ docker compose -f docker-compose.yml --profile live-gen --profile mart-sync down
 ## Where to query in ClickHouse
 
 - **Raw layer**: `inventory_raw`
+- **Staging layer**: `inventory_stg`
 - **Mart layer (Power BI connects here)**: `inventory_mart`
 
 ## Table guide
 
 `inventory_raw` is the landing layer. Data arrives here first from Kafka with minimal reshaping.
+`inventory_stg` is an optional normalization layer for inspection and future transforms. In the current setup, `inventory_mart` still refreshes directly from `inventory_raw`, while `inventory_stg` can be refreshed separately for standardized keys and latest-state views.
 
 ### `inventory_raw` tables
 
