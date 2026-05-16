@@ -76,5 +76,6 @@ Use this screen to connect dashboard quality back to source ingestion: reviewers
 - Dashboards are provisioned from `grafana/dashboards`.
 - All six dashboards use the `inventory-role` tag and include a `Switch role dashboard` link.
 - Each dashboard refreshes every 5 seconds for the near-real-time demo.
+- Logstash source polling and table-level interval mapping are summarized in `../logstash_ingestion_intervals.md`.
 - The report narrative should emphasize role separation, reduced visual clutter, and clearer reviewer workflow.
 - The screenshots were captured with Playwright after confirming all visible dashboard pages had data.
