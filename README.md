@@ -66,6 +66,8 @@ docker compose -f docker-compose.yml up -d --build
 docker compose -f docker-compose.yml --profile live-gen up -d --build
 ```
 
+By default, the live source generator inserts a new batch every 5 seconds.
+
 ### 4) Mart sync job modes (manual / auto schedule)
 
 #### Manual (one-off refresh)
@@ -76,7 +78,7 @@ Use when you want to sync mart on demand:
 bash scripts/refresh_mart_facts.sh
 ```
 
-#### Auto schedule (every 30s)
+#### Auto schedule (every 5s)
 
 Use when you want dashboards to update continuously:
 
@@ -84,7 +86,7 @@ Use when you want dashboards to update continuously:
 docker compose -f docker-compose.yml --profile mart-sync up -d mart-refresher
 ```
 
-This runs `mart-refresher` independently and syncs `inventory_mart.fact_*` every 30 seconds.
+This runs `mart-refresher` independently and syncs `inventory_mart.fact_*` every 5 seconds.
 
 To stop only the auto-sync job:
 
@@ -96,7 +98,7 @@ docker compose -f docker-compose.yml --profile mart-sync rm -f mart-refresher
 To change the schedule interval, set the env var before running:
 
 ```bash
-MART_REFRESH_INTERVAL_SECONDS=60 docker compose -f docker-compose.yml --profile mart-sync up -d mart-refresher
+MART_REFRESH_INTERVAL_SECONDS=15 docker compose -f docker-compose.yml --profile mart-sync up -d mart-refresher
 ```
 
 If you want the full realtime demo, run both profiles:
@@ -104,6 +106,8 @@ If you want the full realtime demo, run both profiles:
 ```bash
 docker compose -f docker-compose.yml --profile live-gen --profile mart-sync up -d --build
 ```
+
+For the near-CDC demo path, Logstash polls SQL Server every 5 seconds by default through `LOGSTASH_POLL_INTERVAL=5s`.
 
 ### 5) Refresh mart dimensions (for Grafana/BI reports)
 
@@ -206,14 +210,16 @@ docker compose -f docker-compose.yml --profile live-gen --profile mart-sync down
 
 ## Grafana dashboards
 
-Grafana is provisioned automatically at `http://localhost:3002` with the ClickHouse datasource and four inventory dashboards:
+Grafana is provisioned automatically at `http://localhost:3002` with the ClickHouse datasource and six role-focused inventory dashboards. Each dashboard also includes a `Switch role dashboard` dropdown link so reviewers can move between views without scanning one overloaded page.
 
-- `Inventory Executive Summary`: KPI cards, inventory value trend, inbound vs outbound trend, warehouse/category breakdowns, top low-stock and overstock items.
-- `Inventory Stock Monitoring`: stock status distribution, low-stock by warehouse, current stock exception matrix, zero-stock items with recent demand, largest overstock positions.
-- `Inventory Movement & Replenishment`: inbound/outbound movement, receiving vs dispatch by warehouse, top moving SKUs, slow-moving SKUs, open PO metrics, replenishment recommendations.
-- `Inventory Aging & Warehouse Performance`: aging buckets, dead/slow-moving value, inventory accuracy, count variance trend, warehouse-level performance tables.
+- `Executive Overview`: top KPIs, value trend, warehouse value, and low-stock / overstock exception counts.
+- `Warehouse Operations - Stock Exceptions`: stock health distribution, warehouse exception concentration, and actionable stockout / overstock tables.
+- `Warehouse Operations - Movement Flow`: inbound vs outbound flow, receiving vs dispatch by warehouse, fast movers, and slow movers.
+- `Procurement Planner - Replenishment`: open PO status, reorder gaps, supplier SLA proxy, and replenishment recommendations.
+- `Inventory Control - Aging & Accuracy`: aging buckets, dead / slow-moving value, count accuracy, and variance by warehouse.
+- `Data Reliability & SKU Drilldown`: freshness, data quality exceptions, SKU trend drilldowns, and latest SKU detail.
 
-These dashboards are aligned to the main use cases in [`guideline.md`](guideline.md): executive overview, stock monitoring, movement analysis, replenishment planning, and warehouse performance.
+These dashboards are aligned to the main use cases in [`guideline.md`](guideline.md): executive overview, stock monitoring, movement analysis, replenishment planning, inventory control, and data reliability.
 
 Field-by-field metric explanations are documented in [grafana/DASHBOARD_FIELD_GLOSSARY.md](/Users/huynhthanhdat/Workspace/source-ingestion-demo/grafana/DASHBOARD_FIELD_GLOSSARY.md).
 

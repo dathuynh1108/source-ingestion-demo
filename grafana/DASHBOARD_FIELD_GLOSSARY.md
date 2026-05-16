@@ -138,7 +138,7 @@ available_qty > max_stock
 - Source: `inventory_mart.fact_stock_counts`.
 - Usage:
   - `Inventory Accuracy % (60 days)`
-  - `Inventory Accuracy by Warehouse`
+  - `Count Variance by Warehouse`
 - Caveat: this is a strict exact-match definition. A warehouse with many tiny non-zero variances may still look worse than expected.
 
 ## `Variance`
@@ -390,12 +390,7 @@ sum(qty) / 30
 - Source: `inventory_mart.fact_sales_order_lines`.
 - Use: demand intensity proxy for replenishment and stockout risk.
 
-## `Inventory Accuracy by Warehouse`
-
-- Meaning: exact-match stock count accuracy per warehouse.
-- Same base logic as `Inventory Accuracy %`, grouped by warehouse.
-
-## `Latest Inventory Value by Warehouse`
+## `Inventory Value by Warehouse`
 
 - Meaning: total stock value by warehouse at the latest snapshot.
 - Source: `inventory_mart.fact_inventory_snapshot_daily` joined to `dim_warehouse`.
@@ -406,12 +401,12 @@ sum(qty) / 30
 - Source: latest stock snapshot joined to `dim_product`.
 - Caveat: rows with missing category are usually mapped to `Unknown`.
 
-## `Top Low-stock Items`
+## Low-stock Rows in `Current Stock Exception Matrix`
 
 - Meaning: detailed list of the most severe low-stock positions.
 - Usually includes warehouse, SKU, product name, available quantity, reorder point, and shortage severity.
 
-## `Top Overstock Items`
+## Overstock Rows in `Current Stock Exception Matrix`
 
 - Meaning: detailed list of the most severe overstock positions.
 - Usually includes warehouse, SKU, product name, available quantity, and max stock gap.
@@ -509,7 +504,7 @@ sum(qty) / 30
 
 ## Dashboard-to-source mapping
 
-### `Inventory Executive Summary`
+### `Executive Overview`
 
 - Main source:
   - `inventory_mart.fact_inventory_snapshot_daily`
@@ -517,7 +512,7 @@ sum(qty) / 30
   - `inventory_mart.dim_product`
   - `inventory_mart.dim_warehouse`
 
-### `Inventory Stock Monitoring`
+### `Warehouse Operations - Stock Exceptions`
 
 - Main source:
   - `inventory_mart.fact_inventory_snapshot_daily`
@@ -525,22 +520,37 @@ sum(qty) / 30
   - `inventory_mart.dim_product`
   - `inventory_mart.dim_warehouse`
 
-### `Inventory Movement & Replenishment`
+### `Warehouse Operations - Movement Flow`
 
 - Main source:
   - `inventory_mart.fact_inventory_movement`
+  - `inventory_mart.fact_inventory_snapshot_daily`
+  - `inventory_mart.fact_sales_order_lines`
+  - `inventory_mart.dim_product`
+  - `inventory_mart.dim_warehouse`
+
+### `Procurement Planner - Replenishment`
+
+- Main source:
   - `inventory_mart.fact_purchase_order_lines`
   - `inventory_mart.fact_sales_order_lines`
   - `inventory_mart.dim_product`
   - `inventory_mart.dim_supplier`
   - `inventory_mart.dim_warehouse`
 
-### `Inventory Aging & Warehouse Performance`
+### `Inventory Control - Aging & Accuracy`
 
 - Main source:
   - `inventory_mart.fact_inventory_snapshot_daily`
   - `inventory_mart.fact_inventory_movement`
   - `inventory_mart.fact_stock_counts`
+  - `inventory_mart.dim_product`
+  - `inventory_mart.dim_warehouse`
+
+### `Data Reliability & SKU Drilldown`
+
+- Main source:
+  - `inventory_mart.fact_inventory_snapshot_daily`
   - `inventory_mart.fact_sales_order_lines`
   - `inventory_mart.dim_product`
   - `inventory_mart.dim_warehouse`

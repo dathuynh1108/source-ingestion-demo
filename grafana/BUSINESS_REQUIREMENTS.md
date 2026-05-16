@@ -4,10 +4,12 @@ This document defines 10 business requirements for the Grafana inventory dashboa
 
 Scope:
 
-- `Inventory Executive Summary`
-- `Inventory Stock Monitoring`
-- `Inventory Movement & Replenishment`
-- `Inventory Aging & Warehouse Performance`
+- `Executive Overview`
+- `Warehouse Operations - Stock Exceptions`
+- `Warehouse Operations - Movement Flow`
+- `Procurement Planner - Replenishment`
+- `Inventory Control - Aging & Accuracy`
+- `Data Reliability & SKU Drilldown`
 
 These requirements are written to match the current dashboard implementation and the current mart model in `inventory_mart.*`.
 
@@ -32,7 +34,7 @@ Business users need to know the current stock position immediately without runni
 
 ### Dashboard mapping
 
-- `Inventory Executive Summary`
+- `Executive Overview`
 - panels:
   - `Latest Snapshot Date`
   - `On-hand Quantity`
@@ -66,14 +68,14 @@ Operations teams need a clear signal of which SKUs are at risk of stockout so th
 
 ### Dashboard mapping
 
-- `Inventory Executive Summary`
-- `Inventory Stock Monitoring`
+- `Executive Overview`
+- `Warehouse Operations - Stock Exceptions`
 - panels:
   - `Low-stock SKUs`
   - `Items Below Reorder Point`
   - `Low-stock Items by Warehouse`
   - `Zero Stock with Recent Demand (30 days)`
-  - `Top Low-stock Items`
+  - `Current Stock Exception Matrix`
 
 ### Acceptance criteria
 
@@ -101,12 +103,12 @@ The business needs visibility into excess stock that ties up capital, increases 
 
 ### Dashboard mapping
 
-- `Inventory Executive Summary`
-- `Inventory Stock Monitoring`
+- `Executive Overview`
+- `Warehouse Operations - Stock Exceptions`
 - panels:
   - `Overstock SKUs`
   - `Largest Overstock Positions`
-  - `Top Overstock Items`
+  - `Current Stock Exception Matrix`
 
 ### Acceptance criteria
 
@@ -131,24 +133,20 @@ Management and finance need to understand not only current inventory value, but 
 - total inventory value
 - inventory value trend
 - inventory value by warehouse
-- inventory value by category
 
 ### Dashboard mapping
 
-- `Inventory Executive Summary`
-- `Inventory Aging & Warehouse Performance`
+- `Executive Overview`
 - panels:
   - `Inventory Value`
   - `Inventory Value Over Time`
   - `Inventory Value by Warehouse`
-  - `Inventory Value by Category`
-  - `Latest Inventory Value by Warehouse`
 
 ### Acceptance criteria
 
 - Users can see total inventory value for the latest snapshot.
 - Users can see whether value is trending up or down.
-- Users can identify which warehouses and categories concentrate the most value.
+- Users can identify which warehouses concentrate the most value.
 
 ## BR-05: Monitor warehouse-level performance and exception concentration
 
@@ -166,18 +164,16 @@ The business needs to compare warehouses to identify where stock, value, and cou
 
 - inventory value by warehouse
 - low-stock by warehouse
-- inventory accuracy by warehouse
 - count variance by warehouse
 
 ### Dashboard mapping
 
-- `Inventory Executive Summary`
-- `Inventory Stock Monitoring`
-- `Inventory Aging & Warehouse Performance`
+- `Executive Overview`
+- `Warehouse Operations - Stock Exceptions`
+- `Inventory Control - Aging & Accuracy`
 - panels:
   - `Inventory Value by Warehouse`
   - `Low-stock Items by Warehouse`
-  - `Inventory Accuracy by Warehouse`
   - `Count Variance by Warehouse`
 
 ### Acceptance criteria
@@ -207,10 +203,8 @@ Operations and management need to know whether stock is flowing in and out in a 
 
 ### Dashboard mapping
 
-- `Inventory Executive Summary`
-- `Inventory Movement & Replenishment`
+- `Warehouse Operations - Movement Flow`
 - panels:
-  - `Inbound vs Outbound Trend (90 days)`
   - `Inbound vs Outbound (90 days)`
   - `Receiving vs Dispatch by Warehouse (30 days)`
   - `Top Moving SKUs (30 days)`
@@ -244,7 +238,7 @@ Procurement and planning teams need a practical view of replenishment demand, pu
 
 ### Dashboard mapping
 
-- `Inventory Movement & Replenishment`
+- `Procurement Planner - Replenishment`
 - panels:
   - `Open PO Quantity`
   - `Open PO Lines`
@@ -281,8 +275,8 @@ The business needs visibility into stock that is not moving, so it can reduce de
 
 ### Dashboard mapping
 
-- `Inventory Movement & Replenishment`
-- `Inventory Aging & Warehouse Performance`
+- `Warehouse Operations - Movement Flow`
+- `Inventory Control - Aging & Accuracy`
 - panels:
   - `Slow-moving SKUs (no movement in 30 days)`
   - `Dead Stock Value (90+ days)`
@@ -317,12 +311,11 @@ The business needs to know whether inventory records are trustworthy enough to s
 
 ### Dashboard mapping
 
-- `Inventory Aging & Warehouse Performance`
+- `Inventory Control - Aging & Accuracy`
 - panels:
   - `Inventory Accuracy % (60 days)`
   - `Avg Absolute Count Variance`
   - `Count Variance Trend (60 days)`
-  - `Inventory Accuracy by Warehouse`
   - `Count Variance by Warehouse`
 
 ### Acceptance criteria
@@ -353,8 +346,8 @@ Users need confidence that the dashboard reflects recent data and that key maste
 
 ### Dashboard mapping
 
-- `Inventory Executive Summary`
-- `Inventory Aging & Warehouse Performance`
+- `Executive Overview`
+- `Data Reliability & SKU Drilldown`
 - panels:
   - `Latest Snapshot Date`
   - `Snapshot Lag (hours)`
@@ -370,18 +363,18 @@ Users need confidence that the dashboard reflects recent data and that key maste
 
 ## Requirement-to-dashboard summary
 
-| Requirement | Executive Summary | Stock Monitoring | Movement & Replenishment | Aging & Warehouse Performance |
-| --- | --- | --- | --- | --- |
-| BR-01 Current inventory position | Yes | Partial | No | Partial |
-| BR-02 Low-stock and stockout risk | Yes | Yes | Partial | No |
-| BR-03 Overstock exposure | Yes | Yes | No | No |
-| BR-04 Inventory value and trend | Yes | No | No | Yes |
-| BR-05 Warehouse-level comparison | Yes | Yes | Partial | Yes |
-| BR-06 Inbound/outbound flow | Yes | No | Yes | No |
-| BR-07 Replenishment and PO management | No | Partial | Yes | No |
-| BR-08 Slow-moving and dead stock | No | Partial | Yes | Yes |
-| BR-09 Count quality and variance | No | No | No | Yes |
-| BR-10 Data freshness and reliability | Partial | No | No | Yes |
+| Requirement | Executive | Stock Exceptions | Movement Flow | Replenishment | Aging & Accuracy | Data Reliability |
+| --- | --- | --- | --- | --- | --- | --- |
+| BR-01 Current inventory position | Yes | Partial | Partial | No | Partial | Partial |
+| BR-02 Low-stock and stockout risk | Yes | Yes | No | Yes | No | No |
+| BR-03 Overstock exposure | Yes | Yes | No | No | No | No |
+| BR-04 Inventory value and trend | Yes | No | No | No | Partial | No |
+| BR-05 Warehouse-level comparison | Yes | Yes | Yes | Partial | Yes | No |
+| BR-06 Inbound/outbound flow | Partial | No | Yes | No | No | No |
+| BR-07 Replenishment and PO management | No | Partial | No | Yes | No | No |
+| BR-08 Slow-moving and dead stock | No | Partial | Yes | No | Yes | No |
+| BR-09 Count quality and variance | No | No | No | No | Yes | No |
+| BR-10 Data freshness and reliability | Partial | Partial | No | No | No | Yes |
 
 ## Notes
 

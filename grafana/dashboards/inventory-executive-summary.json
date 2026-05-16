@@ -6,7 +6,19 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "id": null,
-  "links": [],
+  "links": [
+    {
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "inventory-role"
+      ],
+      "targetBlank": false,
+      "title": "Switch role dashboard",
+      "type": "dashboards"
+    }
+  ],
   "panels": [
     {
       "id": 1,
@@ -17,10 +29,10 @@
         "uid": "clickhouse-inventory"
       },
       "gridPos": {
-        "h": 4,
-        "w": 4,
         "x": 0,
-        "y": 0
+        "y": 0,
+        "w": 4,
+        "h": 4
       },
       "fieldConfig": {
         "defaults": {
@@ -49,7 +61,9 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -67,10 +81,10 @@
         "uid": "clickhouse-inventory"
       },
       "gridPos": {
-        "h": 4,
-        "w": 4,
         "x": 4,
-        "y": 0
+        "y": 0,
+        "w": 4,
+        "h": 4
       },
       "fieldConfig": {
         "defaults": {
@@ -109,7 +123,9 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -127,10 +143,10 @@
         "uid": "clickhouse-inventory"
       },
       "gridPos": {
-        "h": 4,
-        "w": 4,
         "x": 8,
-        "y": 0
+        "y": 0,
+        "w": 4,
+        "h": 4
       },
       "fieldConfig": {
         "defaults": {
@@ -169,7 +185,9 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -187,10 +205,10 @@
         "uid": "clickhouse-inventory"
       },
       "gridPos": {
-        "h": 4,
-        "w": 4,
         "x": 12,
-        "y": 0
+        "y": 0,
+        "w": 4,
+        "h": 4
       },
       "fieldConfig": {
         "defaults": {
@@ -229,7 +247,9 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -247,10 +267,10 @@
         "uid": "clickhouse-inventory"
       },
       "gridPos": {
-        "h": 4,
-        "w": 4,
         "x": 16,
-        "y": 0
+        "y": 0,
+        "w": 4,
+        "h": 4
       },
       "fieldConfig": {
         "defaults": {
@@ -293,7 +313,9 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -311,10 +333,10 @@
         "uid": "clickhouse-inventory"
       },
       "gridPos": {
-        "h": 4,
-        "w": 4,
         "x": 20,
-        "y": 0
+        "y": 0,
+        "w": 4,
+        "h": 4
       },
       "fieldConfig": {
         "defaults": {
@@ -357,7 +379,9 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -375,10 +399,10 @@
         "uid": "clickhouse-inventory"
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
         "x": 0,
-        "y": 4
+        "y": 4,
+        "w": 12,
+        "h": 8
       },
       "fieldConfig": {
         "defaults": {
@@ -434,103 +458,6 @@
     },
     {
       "id": 8,
-      "title": "Inbound vs Outbound Trend (90 days)",
-      "type": "timeseries",
-      "datasource": {
-        "type": "grafana-clickhouse-datasource",
-        "uid": "clickhouse-inventory"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 4
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": true,
-            "drawStyle": "line",
-            "fillOpacity": 18,
-            "gradientMode": "opacity",
-            "lineInterpolation": "smooth",
-            "lineWidth": 3,
-            "pointSize": 4,
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            }
-          },
-          "unit": "short",
-          "decimals": 2
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "inbound_qty"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "outbound_qty"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "orange",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-clickhouse-datasource",
-            "uid": "clickhouse-inventory"
-          },
-          "editorType": "sql",
-          "format": 1,
-          "queryType": "table",
-          "rawSql": "SELECT\n  event_date AS time,\n  sum(qty_in) AS inbound_qty,\n  sum(qty_out) AS outbound_qty\nFROM inventory_mart.fact_inventory_movement\nWHERE event_date >= today() - 90\nGROUP BY event_date\nORDER BY event_date",
-          "refId": "A"
-        }
-      ],
-      "transparent": false,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      }
-    },
-    {
-      "id": 9,
       "title": "Inventory Value by Warehouse",
       "type": "barchart",
       "datasource": {
@@ -538,10 +465,10 @@
         "uid": "clickhouse-inventory"
       },
       "gridPos": {
-        "h": 8,
+        "x": 12,
+        "y": 4,
         "w": 12,
-        "x": 0,
-        "y": 12
+        "h": 8
       },
       "fieldConfig": {
         "defaults": {
@@ -582,186 +509,17 @@
         "xTickLabelRotation": 0,
         "xTickLabelSpacing": 0
       }
-    },
-    {
-      "id": 10,
-      "title": "Inventory Value by Category",
-      "type": "barchart",
-      "datasource": {
-        "type": "grafana-clickhouse-datasource",
-        "uid": "clickhouse-inventory"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 12
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "short",
-          "decimals": 2
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-clickhouse-datasource",
-            "uid": "clickhouse-inventory"
-          },
-          "editorType": "sql",
-          "format": 1,
-          "queryType": "table",
-          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\nSELECT\n  coalesce(p.category, 'Unknown') AS category,\n  round(sum(s.inventory_value), 2) AS inventory_value\nFROM inventory_mart.fact_inventory_snapshot_daily s\nLEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\nLEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = s.warehouse_id\nWHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n  AND ('${warehouse:raw}'='__all' OR s.warehouse_id IN (${warehouse:singlequote}))\n  AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n  AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n  AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n  AND ('${sku:raw}'='__all' OR s.sku_id IN (${sku:singlequote}))\nGROUP BY category\nORDER BY inventory_value DESC",
-          "refId": "A"
-        }
-      ],
-      "transparent": false,
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "orientation": "auto",
-        "showValue": "always",
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        },
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 0
-      }
-    },
-    {
-      "id": 11,
-      "title": "Top Low-stock Items",
-      "type": "table",
-      "datasource": {
-        "type": "grafana-clickhouse-datasource",
-        "uid": "clickhouse-inventory"
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 20
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "decimals": 2
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": "(?i)(available_qty|reorder_point|gap_qty|inventory_value)"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "short"
-              },
-              {
-                "id": "decimals",
-                "value": 2
-              }
-            ]
-          }
-        ]
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-clickhouse-datasource",
-            "uid": "clickhouse-inventory"
-          },
-          "editorType": "sql",
-          "format": 1,
-          "queryType": "table",
-          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\nSELECT\n  coalesce(w.warehouse_name, s.warehouse_id) AS warehouse,\n  s.sku_id AS sku_id,\n  coalesce(p.sku_name, s.sku_id) AS sku_name,\n  coalesce(p.category, 'Unknown') AS category,\n  s.available_qty AS available_qty,\n  p.reorder_point AS reorder_point,\n  greatest(p.reorder_point - s.available_qty, 0) AS gap_qty,\n  round(s.inventory_value, 2) AS inventory_value\nFROM inventory_mart.fact_inventory_snapshot_daily s\nLEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\nLEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = s.warehouse_id\nWHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n  AND p.reorder_point > 0\n  AND s.available_qty < p.reorder_point\n  AND ('${warehouse:raw}'='__all' OR s.warehouse_id IN (${warehouse:singlequote}))\n  AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n  AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n  AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n  AND ('${sku:raw}'='__all' OR s.sku_id IN (${sku:singlequote}))\nORDER BY gap_qty DESC, inventory_value DESC\nLIMIT 10",
-          "refId": "A"
-        }
-      ],
-      "transparent": false,
-      "options": {
-        "cellHeight": "md",
-        "footer": {
-          "show": false
-        },
-        "showHeader": true
-      }
-    },
-    {
-      "id": 12,
-      "title": "Top Overstock Items",
-      "type": "table",
-      "datasource": {
-        "type": "grafana-clickhouse-datasource",
-        "uid": "clickhouse-inventory"
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 20
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "decimals": 2
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": "(?i)(available_qty|max_stock|excess_qty|inventory_value)"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "short"
-              },
-              {
-                "id": "decimals",
-                "value": 2
-              }
-            ]
-          }
-        ]
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-clickhouse-datasource",
-            "uid": "clickhouse-inventory"
-          },
-          "editorType": "sql",
-          "format": 1,
-          "queryType": "table",
-          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\nSELECT\n  coalesce(w.warehouse_name, s.warehouse_id) AS warehouse,\n  s.sku_id AS sku_id,\n  coalesce(p.sku_name, s.sku_id) AS sku_name,\n  coalesce(p.category, 'Unknown') AS category,\n  s.available_qty AS available_qty,\n  p.max_stock AS max_stock,\n  greatest(s.available_qty - p.max_stock, 0) AS excess_qty,\n  round(s.inventory_value, 2) AS inventory_value\nFROM inventory_mart.fact_inventory_snapshot_daily s\nLEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\nLEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = s.warehouse_id\nWHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n  AND p.max_stock > 0\n  AND s.available_qty > p.max_stock\n  AND ('${warehouse:raw}'='__all' OR s.warehouse_id IN (${warehouse:singlequote}))\n  AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n  AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n  AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n  AND ('${sku:raw}'='__all' OR s.sku_id IN (${sku:singlequote}))\nORDER BY excess_qty DESC, inventory_value DESC\nLIMIT 10",
-          "refId": "A"
-        }
-      ],
-      "transparent": false,
-      "options": {
-        "cellHeight": "md",
-        "footer": {
-          "show": false
-        },
-        "showHeader": true
-      }
     }
   ],
-  "refresh": "30s",
+  "refresh": "5s",
   "schemaVersion": 39,
   "style": "dark",
-  "tags": ["inventory", "executive", "guideline-summary"],
+  "tags": [
+    "inventory",
+    "inventory-role",
+    "executive",
+    "overview"
+  ],
   "templating": {
     "list": [
       {
@@ -853,28 +611,6 @@
         "sort": 1
       },
       {
-        "name": "supplier",
-        "label": "Supplier",
-        "type": "query",
-        "datasource": {
-          "type": "grafana-clickhouse-datasource",
-          "uid": "clickhouse-inventory"
-        },
-        "query": "SELECT DISTINCT supplier_name FROM inventory_mart.dim_supplier WHERE supplier_name != '' ORDER BY supplier_name",
-        "definition": "SELECT DISTINCT supplier_name FROM inventory_mart.dim_supplier WHERE supplier_name != '' ORDER BY supplier_name",
-        "multi": true,
-        "includeAll": true,
-        "current": {
-          "selected": true,
-          "text": "All",
-          "value": "__all"
-        },
-        "refresh": 1,
-        "hide": 0,
-        "skipUrlSync": false,
-        "sort": 1
-      },
-      {
         "name": "sku",
         "label": "SKU",
         "type": "query",
@@ -895,21 +631,6 @@
         "hide": 0,
         "skipUrlSync": false,
         "sort": 1
-      },
-      {
-        "name": "stock_status",
-        "label": "Stock Status",
-        "type": "custom",
-        "query": "All,Stockout,Low stock,Healthy,Overstock",
-        "multi": true,
-        "includeAll": true,
-        "current": {
-          "selected": true,
-          "text": "All",
-          "value": "__all"
-        },
-        "hide": 0,
-        "skipUrlSync": false
       }
     ]
   },
@@ -919,7 +640,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Inventory Executive Summary",
+  "title": "Executive Overview",
   "uid": "inventory-executive-summary",
   "version": 1,
   "weekStart": ""

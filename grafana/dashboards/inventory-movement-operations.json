@@ -28,90 +28,6 @@
       "fieldConfig": {
         "defaults": {
           "mappings": [],
-          "unit": "percent",
-          "decimals": 1,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": "(?i)(qty|value|days|variance|count|stock)"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "short"
-              },
-              {
-                "id": "decimals",
-                "value": 2
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 0,
-        "w": 6,
-        "h": 4
-      },
-      "id": 1,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.5.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-clickhouse-datasource",
-            "uid": "clickhouse-inventory"
-          },
-          "editorType": "sql",
-          "format": 1,
-          "queryType": "table",
-          "rawSql": "SELECT round(100.0 * countIf(sc.variance_qty = 0) / nullIf(count(), 0), 2) AS value\nFROM inventory_mart.fact_stock_counts sc\nLEFT JOIN inventory_mart.dim_product p ON p.sku_id = sc.sku_id\nLEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = sc.warehouse_id\nWHERE sc.count_date >= today() - 60\n  AND ('${warehouse:raw}'='__all' OR sc.warehouse_id IN (${warehouse:singlequote}))\n  AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n  AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n  AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n  AND ('${sku:raw}'='__all' OR sc.sku_id IN (${sku:singlequote}))",
-          "refId": "A"
-        }
-      ],
-      "title": "Inventory Accuracy % (60 days)",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "grafana-clickhouse-datasource",
-        "uid": "clickhouse-inventory"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
           "unit": "short",
           "decimals": 2,
           "thresholds": {
@@ -123,7 +39,7 @@
               },
               {
                 "color": "red",
-                "value": 1
+                "value": 999999999
               }
             ]
           }
@@ -131,14 +47,14 @@
         "overrides": []
       },
       "gridPos": {
-        "x": 6,
+        "x": 0,
         "y": 0,
         "w": 6,
         "h": 4
       },
-      "id": 2,
+      "id": 1,
       "options": {
-        "colorMode": "value",
+        "colorMode": "none",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
@@ -164,12 +80,74 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT round(avg(abs(sc.variance_qty)), 2) AS value\nFROM inventory_mart.fact_stock_counts sc\nLEFT JOIN inventory_mart.dim_product p ON p.sku_id = sc.sku_id\nLEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = sc.warehouse_id\nWHERE sc.count_date >= today() - 60\n  AND ('${warehouse:raw}'='__all' OR sc.warehouse_id IN (${warehouse:singlequote}))\n  AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n  AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n  AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n  AND ('${sku:raw}'='__all' OR sc.sku_id IN (${sku:singlequote}))",
+          "rawSql": "SELECT round(sum(s.qty) / 30, 2) AS value\nFROM inventory_mart.fact_sales_order_lines s\nLEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\nWHERE s.created_date >= today() - 30\n  AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n  AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n  AND ('${sku:raw}'='__all' OR s.sku_id IN (${sku:singlequote}))",
           "refId": "A"
         }
       ],
-      "title": "Avg Absolute Count Variance",
+      "title": "Average Daily Sold Qty (30 days)",
       "type": "stat"
+    },
+    {
+      "id": 2,
+      "title": "Available Quantity",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\nSELECT sum(s.available_qty) AS value\nFROM inventory_mart.fact_inventory_snapshot_daily s\nLEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\nLEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = s.warehouse_id\nWHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n  AND ('${warehouse:raw}'='__all' OR s.warehouse_id IN (${warehouse:singlequote}))\n  AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n  AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n  AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n  AND ('${sku:raw}'='__all' OR s.sku_id IN (${sku:singlequote}))",
+          "refId": "A"
+        }
+      ],
+      "transparent": false,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      }
     },
     {
       "datasource": {
@@ -231,11 +209,11 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\n,\n    latest_stock AS (\n      SELECT\n        s.snapshot_date,\n        s.warehouse_id,\n        s.sku_id,\n        s.available_qty,\n        s.damaged_qty,\n        s.in_transit_qty,\n        round(s.inventory_value, 2) AS inventory_value\n      FROM inventory_mart.fact_inventory_snapshot_daily s\n      WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n    ),\n    last_movement AS (\n      SELECT\n        warehouse_id,\n        sku_id,\n        max(event_date) AS last_movement_date\n      FROM inventory_mart.fact_inventory_movement\n      GROUP BY warehouse_id, sku_id\n    ),\n    aging_base AS (\n      SELECT\n        ls.warehouse_id,\n        ls.sku_id,\n        ls.available_qty,\n        ls.damaged_qty,\n        ls.in_transit_qty,\n        ls.inventory_value,\n        coalesce(lm.last_movement_date, ls.snapshot_date) AS last_movement_date,\n        dateDiff('day', coalesce(lm.last_movement_date, ls.snapshot_date), ls.snapshot_date) AS days_since_movement\n      FROM latest_stock ls\n      LEFT JOIN last_movement lm ON lm.warehouse_id = ls.warehouse_id AND lm.sku_id = ls.sku_id\n      WHERE ls.available_qty > 0\n    )\n\n            SELECT round(sumIf(inventory_value, days_since_movement > 90), 2) AS value\n            FROM aging_base",
+          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\n\n            SELECT sum(s.damaged_qty) AS value\n            FROM inventory_mart.fact_inventory_snapshot_daily s\n            LEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\n            LEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = s.warehouse_id\n            WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n              AND ('${warehouse:raw}'='__all' OR s.warehouse_id IN (${warehouse:singlequote}))\n              AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n              AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n              AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n              AND ('${sku:raw}'='__all' OR s.sku_id IN (${sku:singlequote}))",
           "refId": "A"
         }
       ],
-      "title": "Dead Stock Value (90+ days)",
+      "title": "Damaged Qty (Latest Snapshot)",
       "type": "stat"
     },
     {
@@ -298,108 +276,12 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\n,\n    latest_stock AS (\n      SELECT\n        s.snapshot_date,\n        s.warehouse_id,\n        s.sku_id,\n        s.available_qty,\n        s.damaged_qty,\n        s.in_transit_qty,\n        round(s.inventory_value, 2) AS inventory_value\n      FROM inventory_mart.fact_inventory_snapshot_daily s\n      WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n    ),\n    last_movement AS (\n      SELECT\n        warehouse_id,\n        sku_id,\n        max(event_date) AS last_movement_date\n      FROM inventory_mart.fact_inventory_movement\n      GROUP BY warehouse_id, sku_id\n    ),\n    aging_base AS (\n      SELECT\n        ls.warehouse_id,\n        ls.sku_id,\n        ls.available_qty,\n        ls.damaged_qty,\n        ls.in_transit_qty,\n        ls.inventory_value,\n        coalesce(lm.last_movement_date, ls.snapshot_date) AS last_movement_date,\n        dateDiff('day', coalesce(lm.last_movement_date, ls.snapshot_date), ls.snapshot_date) AS days_since_movement\n      FROM latest_stock ls\n      LEFT JOIN last_movement lm ON lm.warehouse_id = ls.warehouse_id AND lm.sku_id = ls.sku_id\n      WHERE ls.available_qty > 0\n    )\n\n            SELECT round(sumIf(inventory_value, days_since_movement BETWEEN 31 AND 90), 2) AS value\n            FROM aging_base",
+          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n)\n\n            SELECT sum(s.in_transit_qty) AS value\n            FROM inventory_mart.fact_inventory_snapshot_daily s\n            LEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\n            LEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = s.warehouse_id\n            WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n              AND ('${warehouse:raw}'='__all' OR s.warehouse_id IN (${warehouse:singlequote}))\n              AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n              AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n              AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n              AND ('${sku:raw}'='__all' OR s.sku_id IN (${sku:singlequote}))",
           "refId": "A"
         }
       ],
-      "title": "Slow-moving Value (31-90 days)",
+      "title": "In-transit Qty (Latest Snapshot)",
       "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "grafana-clickhouse-datasource",
-        "uid": "clickhouse-inventory"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "fillOpacity": 80,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "unit": "short",
-          "decimals": 2,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 4,
-        "w": 12,
-        "h": 8
-      },
-      "id": 5,
-      "options": {
-        "barRadius": 0,
-        "barWidth": 0.97,
-        "fullHighlight": false,
-        "groupWidth": 0.7,
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "orientation": "auto",
-        "showValue": "auto",
-        "stacking": "none",
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        },
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 0
-      },
-      "pluginVersion": "11.5.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-clickhouse-datasource",
-            "uid": "clickhouse-inventory"
-          },
-          "editorType": "sql",
-          "format": 1,
-          "queryType": "table",
-          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n),\nlatest_stock AS (\n  SELECT\n    s.snapshot_date,\n    s.warehouse_id,\n    s.sku_id,\n    s.available_qty,\n    round(s.inventory_value, 2) AS inventory_value\n  FROM inventory_mart.fact_inventory_snapshot_daily s\n  WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n),\nlast_movement AS (\n  SELECT\n    warehouse_id,\n    sku_id,\n    max(event_date) AS last_movement_date\n  FROM inventory_mart.fact_inventory_movement\n  GROUP BY warehouse_id, sku_id\n),\naging_base AS (\n  SELECT\n    ls.inventory_value,\n    dateDiff('day', coalesce(lm.last_movement_date, ls.snapshot_date), ls.snapshot_date) AS days_since_movement\n  FROM latest_stock ls\n  LEFT JOIN last_movement lm ON lm.warehouse_id = ls.warehouse_id AND lm.sku_id = ls.sku_id\n  WHERE ls.available_qty > 0\n),\nbucket_values AS (\n  SELECT\n    multiIf(\n      days_since_movement <= 30, '0-30 days',\n      days_since_movement <= 60, '31-60 days',\n      days_since_movement <= 90, '61-90 days',\n      '90+ days'\n    ) AS aging_bucket,\n    round(sum(inventory_value), 2) AS aging_value\n  FROM aging_base\n  GROUP BY aging_bucket\n),\nbucket_order AS (\n  SELECT arrayJoin(['0-30 days', '31-60 days', '61-90 days', '90+ days']) AS aging_bucket\n)\nSELECT\n  bo.aging_bucket,\n  coalesce(bv.aging_value, 0) AS aging_value\nFROM bucket_order bo\nLEFT JOIN bucket_values bv USING (aging_bucket)\nORDER BY indexOf(['0-30 days', '31-60 days', '61-90 days', '90+ days'], bo.aging_bucket)",
-          "refId": "A"
-        }
-      ],
-      "title": "Aging Value by Bucket",
-      "type": "barchart"
     },
     {
       "datasource": {
@@ -444,9 +326,96 @@
               "mode": "off"
             }
           },
-          "mappings": [],
           "unit": "short",
           "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.5.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse-inventory"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT\n  m.event_date AS time,\n  sum(m.qty_in) AS inbound_qty,\n  sum(m.qty_out) AS outbound_qty\nFROM inventory_mart.fact_inventory_movement m\nLEFT JOIN inventory_mart.dim_product p ON p.sku_id = m.sku_id\nLEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = m.warehouse_id\nWHERE m.event_date >= today() - 90\n  AND ('${warehouse:raw}'='__all' OR m.warehouse_id IN (${warehouse:singlequote}))\n  AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n  AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n  AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n  AND ('${sku:raw}'='__all' OR m.sku_id IN (${sku:singlequote}))\nGROUP BY m.event_date\nORDER BY m.event_date",
+          "refId": "A"
+        }
+      ],
+      "title": "Inbound vs Outbound (90 days)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse-inventory"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "unit": "short",
+          "decimals": 2,
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -471,17 +440,26 @@
       },
       "id": 6,
       "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
         "legend": {
           "calcs": [],
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
-          "showLegend": true
+          "showLegend": false
         },
+        "orientation": "auto",
+        "showValue": "always",
+        "stacking": "none",
         "tooltip": {
           "hideZeros": false,
-          "mode": "multi",
-          "sort": "desc"
-        }
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
       },
       "pluginVersion": "11.5.0",
       "targets": [
@@ -493,12 +471,12 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT\n  sc.count_date AS time,\n  round(avg(abs(sc.variance_qty)), 2) AS avg_abs_variance,\n  round(100.0 * countIf(sc.variance_qty = 0) / nullIf(count(), 0), 2) AS accuracy_pct\nFROM inventory_mart.fact_stock_counts sc\nLEFT JOIN inventory_mart.dim_product p ON p.sku_id = sc.sku_id\nLEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = sc.warehouse_id\nWHERE sc.count_date >= today() - 60\n  AND ('${warehouse:raw}'='__all' OR sc.warehouse_id IN (${warehouse:singlequote}))\n  AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n  AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n  AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n  AND ('${sku:raw}'='__all' OR sc.sku_id IN (${sku:singlequote}))\nGROUP BY sc.count_date\nORDER BY sc.count_date",
+          "rawSql": "SELECT\n  coalesce(w.warehouse_name, m.warehouse_id) AS warehouse,\n  sum(m.qty_in) AS received_qty,\n  sum(m.qty_out) AS dispatched_qty\nFROM inventory_mart.fact_inventory_movement m\nLEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = m.warehouse_id\nLEFT JOIN inventory_mart.dim_product p ON p.sku_id = m.sku_id\nWHERE m.event_date >= today() - 30\n  AND ('${warehouse:raw}'='__all' OR m.warehouse_id IN (${warehouse:singlequote}))\n  AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n  AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n  AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n  AND ('${sku:raw}'='__all' OR m.sku_id IN (${sku:singlequote}))\nGROUP BY warehouse\nORDER BY received_qty DESC",
           "refId": "A"
         }
       ],
-      "title": "Count Variance Trend (60 days)",
-      "type": "timeseries"
+      "title": "Receiving vs Dispatch by Warehouse (30 days)",
+      "type": "barchart"
     },
     {
       "datasource": {
@@ -533,7 +511,7 @@
           {
             "matcher": {
               "id": "byRegexp",
-              "options": "(?i)(qty|value|days|variance|count|stock)"
+              "options": "(?i)(qty|volume|value|reorder|cover|days|stock)"
             },
             "properties": [
               {
@@ -577,11 +555,11 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n),\nlatest_stock AS (\n  SELECT\n    s.snapshot_date AS snapshot_date,\n    s.warehouse_id AS warehouse_id,\n    s.sku_id AS sku_id,\n    s.available_qty AS available_qty,\n    s.damaged_qty AS damaged_qty,\n    s.in_transit_qty AS in_transit_qty,\n    round(s.inventory_value, 2) AS inventory_value\n  FROM inventory_mart.fact_inventory_snapshot_daily s\n  LEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = s.warehouse_id\n  LEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\n  WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n    AND ('${warehouse:raw}'='__all' OR s.warehouse_id IN (${warehouse:singlequote}))\n    AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n    AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n    AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n    AND ('${sku:raw}'='__all' OR s.sku_id IN (${sku:singlequote}))\n),\nlast_movement AS (\n  SELECT\n    warehouse_id,\n    sku_id,\n    max(event_date) AS last_movement_date\n  FROM inventory_mart.fact_inventory_movement\n  GROUP BY warehouse_id, sku_id\n),\naging_base AS (\n  SELECT\n    ls.warehouse_id,\n    ls.sku_id,\n    ls.available_qty,\n    ls.damaged_qty,\n    ls.in_transit_qty,\n    ls.inventory_value,\n    coalesce(lm.last_movement_date, ls.snapshot_date) AS last_movement_date,\n    dateDiff('day', coalesce(lm.last_movement_date, ls.snapshot_date), ls.snapshot_date) AS days_since_movement\n  FROM latest_stock ls\n  LEFT JOIN last_movement lm ON lm.warehouse_id = ls.warehouse_id AND lm.sku_id = ls.sku_id\n  WHERE ls.available_qty > 0\n)\nSELECT\n  coalesce(w.warehouse_name, a.warehouse_id) AS warehouse,\n  a.sku_id AS sku_id,\n  coalesce(p.sku_name, a.sku_id) AS sku_name,\n  coalesce(p.category, 'Unknown') AS category,\n  a.available_qty,\n  a.inventory_value,\n  a.last_movement_date,\n  a.days_since_movement,\n  if(a.days_since_movement >= 30, 'Dead/Slow >=30d', 'Top slow recent movers') AS slow_moving_bucket\nFROM aging_base a\nLEFT JOIN inventory_mart.dim_product p ON p.sku_id = a.sku_id\nLEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = a.warehouse_id\nORDER BY\n  if(a.days_since_movement >= 30, 1, 0) DESC,\n  a.days_since_movement DESC,\n  a.inventory_value DESC\nLIMIT 25",
+          "rawSql": "SELECT\n  m.sku_id AS sku_id,\n  coalesce(p.sku_name, m.sku_id) AS sku_name,\n  coalesce(p.category, 'Unknown') AS category,\n  sum(m.qty_in) AS qty_in,\n  sum(m.qty_out) AS qty_out,\n  sum(abs(m.qty_change)) AS movement_volume,\n  round(sum(abs(m.qty_change) * toFloat64(dp.unit_cost)), 2) AS movement_value_proxy\nFROM inventory_mart.fact_inventory_movement m\nLEFT JOIN inventory_mart.dim_product p ON p.sku_id = m.sku_id\nLEFT JOIN inventory_mart.dim_product dp ON dp.sku_id = m.sku_id\nLEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = m.warehouse_id\nWHERE m.event_date >= today() - 30\n  AND ('${warehouse:raw}'='__all' OR m.warehouse_id IN (${warehouse:singlequote}))\n  AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n  AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n  AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n  AND ('${sku:raw}'='__all' OR m.sku_id IN (${sku:singlequote}))\nGROUP BY m.sku_id, sku_name, category\nORDER BY movement_volume DESC\nLIMIT 20",
           "refId": "A"
         }
       ],
-      "title": "Top Dead / Slow-moving SKUs",
+      "title": "Top Moving SKUs (30 days)",
       "type": "table"
     },
     {
@@ -613,7 +591,24 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "(?i)(qty|volume|value|reorder|cover|days|stock)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "x": 12,
@@ -644,11 +639,11 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT\n  coalesce(w.warehouse_name, sc.warehouse_id) AS warehouse,\n  count() AS count_events,\n  round(avg(abs(sc.variance_qty)), 2) AS avg_abs_variance,\n  round(sum(abs(sc.variance_qty)), 2) AS total_abs_variance,\n  round(100.0 * countIf(sc.variance_qty = 0) / nullIf(count(), 0), 2) AS accuracy_pct\nFROM inventory_mart.fact_stock_counts sc\nLEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = sc.warehouse_id\nLEFT JOIN inventory_mart.dim_product p ON p.sku_id = sc.sku_id\nWHERE sc.count_date >= today() - 60\n  AND ('${warehouse:raw}'='__all' OR sc.warehouse_id IN (${warehouse:singlequote}))\n  AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n  AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n  AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n  AND ('${sku:raw}'='__all' OR sc.sku_id IN (${sku:singlequote}))\nGROUP BY warehouse\nORDER BY accuracy_pct ASC, total_abs_variance DESC",
+          "rawSql": "WITH latest_snapshot AS (\n  SELECT max(snapshot_date) AS snapshot_date\n  FROM inventory_mart.fact_inventory_snapshot_daily\n),\nlatest_stock AS (\n  SELECT\n    s.snapshot_date AS snapshot_date,\n    s.warehouse_id AS warehouse_id,\n    s.sku_id AS sku_id,\n    round(sum(s.available_qty), 2) AS available_qty,\n    round(sum(s.inventory_value), 2) AS inventory_value\n  FROM inventory_mart.fact_inventory_snapshot_daily s\n  LEFT JOIN inventory_mart.dim_warehouse w ON w.warehouse_id = s.warehouse_id\n  LEFT JOIN inventory_mart.dim_product p ON p.sku_id = s.sku_id\n  WHERE s.snapshot_date = (SELECT snapshot_date FROM latest_snapshot)\n    AND ('${warehouse:raw}'='__all' OR s.warehouse_id IN (${warehouse:singlequote}))\n    AND ('${region:raw}'='__all' OR w.region IN (${region:singlequote}))\n    AND ('${category:raw}'='__all' OR p.category IN (${category:singlequote}))\n    AND ('${brand:raw}'='__all' OR p.brand IN (${brand:singlequote}))\n    AND ('${sku:raw}'='__all' OR s.sku_id IN (${sku:singlequote}))\n  GROUP BY s.snapshot_date, s.warehouse_id, s.sku_id\n),\nrecent_moves AS (\n  SELECT\n    warehouse_id,\n    sku_id,\n    max(event_date) AS last_event_date\n  FROM inventory_mart.fact_inventory_movement\n  WHERE ('${warehouse:raw}'='__all' OR warehouse_id IN (${warehouse:singlequote}))\n    AND ('${sku:raw}'='__all' OR sku_id IN (${sku:singlequote}))\n  GROUP BY warehouse_id, sku_id\n)\nSELECT\n  ls.warehouse_id,\n  ls.sku_id,\n  coalesce(p.sku_name, ls.sku_id) AS sku_name,\n  coalesce(p.category, 'Unknown') AS category,\n  ls.available_qty,\n  ls.inventory_value,\n  rm.last_event_date,\n  dateDiff('day', coalesce(rm.last_event_date, ls.snapshot_date), ls.snapshot_date) AS days_since_last_movement,\n  if(dateDiff('day', coalesce(rm.last_event_date, ls.snapshot_date), ls.snapshot_date) >= 30, 'No movement >=30d', 'Slowest recent movers') AS movement_flag\nFROM latest_stock ls\nLEFT JOIN recent_moves rm ON rm.sku_id = ls.sku_id AND rm.warehouse_id = ls.warehouse_id\nLEFT JOIN inventory_mart.dim_product p ON p.sku_id = ls.sku_id\nWHERE ls.available_qty > 0\nORDER BY\n  if(dateDiff('day', coalesce(rm.last_event_date, ls.snapshot_date), ls.snapshot_date) >= 30, 1, 0) DESC,\n  dateDiff('day', coalesce(rm.last_event_date, ls.snapshot_date), ls.snapshot_date) DESC,\n  ls.inventory_value DESC\nLIMIT 20",
           "refId": "A"
         }
       ],
-      "title": "Count Variance by Warehouse",
+      "title": "Slow-moving SKUs (no movement in 30 days)",
       "type": "table"
     }
   ],
@@ -658,9 +653,8 @@
   "tags": [
     "inventory",
     "inventory-role",
-    "inventory-control",
-    "aging",
-    "accuracy"
+    "warehouse-ops",
+    "movement"
   ],
   "templating": {
     "list": [
@@ -782,8 +776,8 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Inventory Control - Aging & Accuracy",
-  "uid": "inventory-aging-performance",
+  "title": "Warehouse Operations - Movement Flow",
+  "uid": "inventory-movement-operations",
   "version": 1,
   "weekStart": ""
 }

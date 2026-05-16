@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+"""Legacy dashboard draft generator.
+
+Provisioned role dashboards are maintained as JSON files in grafana/dashboards.
+This script writes to grafana/dashboards/inventory so it does not overwrite the
+role-focused dashboards mounted by docker-compose.yml.
+"""
+
 from __future__ import annotations
 
 import json
@@ -33,7 +40,7 @@ def base_dashboard(uid: str, title: str, tags: list[str]) -> dict:
         "id": None,
         "links": [],
         "panels": [],
-        "refresh": "10m",
+        "refresh": "5s",
         "schemaVersion": SCHEMA_VERSION,
         "style": "dark",
         "tags": tags,
